@@ -148,3 +148,88 @@ pre { white-space: pre-wrap; color: var(--muted); font-family: Arial, Helvetica,
   .learn-first-list { grid-template-columns: 1fr; }
   .role-input-grid { grid-template-columns: 1fr; }
 }
+.training-progress-card {
+  border: 1px solid rgba(36, 91, 166, 0.28);
+  background: linear-gradient(180deg, rgba(238, 246, 255, 0.96), rgba(255, 255, 255, 0.96));
+}
+
+.progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 10px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(18, 37, 63, 0.12);
+}
+
+.progress-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #14b8a6);
+  transition: width 220ms ease;
+}
+
+.mission-lock-status {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-left: 4px solid #2563eb;
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.08);
+  color: #102033;
+  font-weight: 700;
+}
+
+.locked,
+.locked-cta {
+  opacity: 0.72;
+}
+
+.locked::after {
+  content: " locked";
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mini-form {
+  display: grid;
+  gap: 10px;
+}
+
+.mini-form label {
+  display: grid;
+  gap: 5px;
+  font-weight: 700;
+}
+
+.mini-form input {
+  min-height: 42px;
+  border: 1px solid rgba(18, 37, 63, 0.16);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+}
+
+.rate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.rate-grid span {
+  padding: 10px;
+  border: 1px solid rgba(18, 37, 63, 0.14);
+  border-radius: 8px;
+  background: #fff;
+  font-weight: 800;
+}

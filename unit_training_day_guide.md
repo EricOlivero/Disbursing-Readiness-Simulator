@@ -1,127 +1,106 @@
-# Unit Training Day Guide
+# Disbursing Readiness Simulator: 3-Hour Training Day Guide
 
-Purpose: Run a controlled feedback session using the Disbursing Readiness Simulator polished PWA prototype.
+## Intent
 
-## Required Framing
+Use the simulator to close the unit learning gap: members must be able to manually balance cash and explain the result using the accountability chain, DD 1081-style handoff/return logic, DD 2665-style daily accountability logic, support documentation, foreign currency rates, and mission interruptions.
 
-Read this before the session:
-
-```text
-This is a prototype training simulator. It uses fictional scenarios, simplified form logic, and training-only currency. It does not replace official policy, local SOP, instructor judgment, or TCCC certification. Today we are testing whether this approach helps finance members learn and practice deployed disbursing accountability.
-```
+This is a prototype training aid, not official policy, not an official Air Force system, and not a TCCC certification tool.
 
 ## Recommended Flow
 
-### Phase 1: Individual Learning
+### 0:00-0:10 - Opening Brief
 
-Time: 20 to 30 minutes
+- Explain the training objective: balance cash and explain the result.
+- Tell members the mission is locked until Training Bay is complete.
+- Explain that TCCC injects are included because finance teams may move outside the wire in deployed paying-agent missions.
 
-Each member:
+### 0:10-0:55 - Individual Training Bay
 
-1. Opens the app.
-2. Accepts the prototype notice.
-3. Goes to Training Bay.
-4. Completes the lessons and object labs.
-5. Practices the accountability stack, DD 1081, DD 2665, and packet concepts.
+Each member completes all learning blocks before moving to mission execution:
 
-Instructor observes:
+- Accountability stack
+- DD 1081 purpose
+- DD 2665 purpose
+- Voucher packet support
+- Foreign currency and rate selection
+- OPORD/FRAGO reading
+- TCCC/accountability interruption response
+- Closeout ritual
+- Mission readiness check
 
-- Where users hesitate.
-- Which concepts need more explanation.
-- Whether users understand money/documents/authority/explanation.
+Facilitator standard: members should be able to say what the forms do, not just click the correct answer.
 
-### Phase 2: Team Setup
+### 0:55-1:10 - Team Assignment
 
-Time: 5 minutes
+Break the class into teams and assign roles:
 
-Teams assign:
+- Commander
+- Budget Officer
+- DDO
+- Disbursing Agent
+- Cashier
+- Paying Agent
 
-- Cashier.
-- Recorder.
-- Reviewer.
-- Team chief.
-- TCCC/safety lead.
+Each team must verbally brief:
 
-One device can be used per team.
+- Mission purpose
+- Funds advanced
+- Rate rule
+- Purchase limit
+- Required support
+- Closeout equation
+- What happens if there is an injury or interruption
 
-### Phase 3: Team Mission
+### 1:10-2:05 - Team Mission Execution
 
-Time: 20 to 30 minutes
+Teams execute the OPORD and FRAGO scenario. The facilitator should require teams to read the five-paragraph order out loud before selecting mission decisions.
 
-Team:
+Observe whether teams:
 
-1. Reviews OPORD.
-2. Marks briefing reviewed.
-3. Executes mission decisions.
-4. Handles FRAGO.
-5. Handles Vendor C missing support.
-6. Completes inject checklist.
-7. Completes role rotation and team handoff.
-8. Goes to Closeout.
+- Pause before cash movement
+- Use the directed rate
+- Reject weak support
+- Track custody during injects
+- Keep a ledger that another person could reconstruct
 
-Instructor watches:
+### 2:05-2:35 - Manual Closeout
 
-- Are roles actually talking?
-- Does the team challenge bad assumptions?
-- Does someone separate cash balance from support?
-- Does the team escalate to DDO correctly?
+Teams complete the closeout work:
 
-### Phase 4: Closeout
+- Beginning accountability
+- Supported payments
+- Cash expected back
+- Physical cash counted
+- Shortage/overage explanation
+- DD 1081-style return explanation
+- DD 2665-style daily accountability summary
 
-Time: 15 to 20 minutes
+Facilitator standard: a team is not ready because the number is correct. They are ready when they can explain why the number is correct.
 
-Team:
+### 2:35-3:00 - AAR
 
-1. Counts USD.
-2. Counts ZD.
-3. Reviews packet.
-4. Completes DD 1081-style returned accountability.
-5. Completes DD 2665-style classification.
-6. Selects structured findings.
-7. Types AAR explanation.
+Use the app AAR plus facilitator questions:
 
-### Phase 5: AAR
+- What did DD 1081 prove?
+- What did DD 2665 summarize?
+- Which rate did you use and why?
+- What support was weak or missing?
+- Who held funds during the TCCC inject?
+- What would you brief the DDO at closeout?
 
-Time: 10 to 15 minutes
+## Scoring Emphasis
 
-Discuss:
+Primary outcome:
 
-- Was intermediate readiness achieved?
-- What did the team get right?
-- What critical findings appeared?
-- What remediation was assigned?
-- What did the app fail to teach clearly?
+- Can the member balance cash and explain the result?
 
-## Feedback Questions
+Secondary outcomes:
 
-Ask each tester:
+- Can the team execute from an OPORD?
+- Can the team respond to FRAGOs?
+- Can the team preserve accountability during operational stress?
+- Can the team identify unsupported payments before closeout?
 
-- Did the learning section prepare you for the mission?
-- Did the team roles feel useful?
-- Did the mission feel realistic enough for deployed finance training?
-- Did the TCCC inject feel connected to paying agent movement?
-- Did closeout help you understand DD 1081/DD 2665 logic?
-- Did the AAR tell you what to fix?
-- What wording felt wrong?
-- What would make this more useful for your unit?
+## Facilitator Notes
 
-## What Not To Claim
-
-Do not claim:
-
-- This is official training.
-- This certifies TCCC.
-- This replaces Silver Flag.
-- This is policy-complete.
-- This is ready for career-field-wide release.
-
-## What To Claim
-
-You can claim:
-
-- This is a working prototype.
-- It tests a scenario-based approach to disbursing readiness.
-- It is offline-first and phone-friendly.
-- It gives safe reps before real deployed disbursing tasks.
-- It needs SME feedback before formal use.
-
+Make the scenario harder by asking "why" after each correct answer. Do not allow the app to become a multiple-choice game. The best evidence of learning is a member explaining the accountability equation in plain English.
