@@ -84,6 +84,14 @@ function show(id) {
     id = "disclaimerGate";
   }
 
+  const gate = $("disclaimerGate");
+  if (gate) {
+    const isGate = id === "disclaimerGate";
+    gate.classList.toggle("active", isGate);
+    gate.hidden = !isGate;
+    gate.style.display = isGate ? "" : "none";
+  }
+
   const gatedScreens = ["mission", "inject", "closeout", "aar"];
   if (gatedScreens.includes(id) && !state.trainingComplete) {
     state.trainingGateMessage = "Mission locked. Complete all Training Bay blocks first so the team understands DD 1081, DD 2665, rates, closeout, and OPORD execution.";
@@ -616,6 +624,12 @@ if ($("acceptDisclaimer")) {
     if (ack && !ack.checked) return;
     state.disclaimerAccepted = true;
     save();
+    const gate = $("disclaimerGate");
+    if (gate) {
+      gate.hidden = true;
+      gate.style.display = "none";
+      gate.classList.remove("active");
+    }
     show("home");
   });
 }
