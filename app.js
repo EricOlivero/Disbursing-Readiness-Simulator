@@ -1,5 +1,5 @@
 const DATA = window.DRS_DATA || {};
-const APP_VERSION = "constructed-response-v1";
+const APP_VERSION = "constructed-response-v2";
 const $ = (id) => document.getElementById(id);
 const money = (n) => Number(n || 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
 const whole = (n) => Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -18,6 +18,8 @@ const baseState = {
   ledger: [],
   flags: [],
   paymentAttempts: {},
+  paymentFindings: {},
+  closeoutFindings: [],
   closeoutChecked: false,
   briefed: false,
   completedLessons: {},
@@ -49,6 +51,8 @@ state.ledger = state.ledger || [];
 state.flags = state.flags || [];
 state.errors = state.errors || [];
 state.paymentAttempts = state.paymentAttempts || {};
+state.paymentFindings = state.paymentFindings || {};
+state.closeoutFindings = state.closeoutFindings || [];
 
 if (state.appVersion !== APP_VERSION) {
   state.lesson = 0;
@@ -364,6 +368,8 @@ function loadScenario(id, resetMission = false) {
     state.ledger = [];
     state.flags = [];
     state.paymentAttempts = {};
+    state.paymentFindings = {};
+    state.closeoutFindings = [];
     state.closeoutChecked = false;
     state.briefed = false;
     state.teamChecks = {};
@@ -505,12 +511,13 @@ function submitTypedPayment() {
     if (!supportOk) misses.push("support status is wrong");
     if (!explainOk) misses.push("explanation is too thin for closeout");
     state.stress += 10;
-    state.errors.push(`${event.title}: Typed payment remediation needed - ${misses.join(", ")}.`);
+    state.paymentFindings[event.title] = `Typed payment remediation needed - ${misses.join(", ")}.`;
     if (feedback) feedback.innerHTML = `<p class="feedback danger">Rework this payment: ${escapeHtml(misses.join("; "))}.</p>`;
     save();
     return;
   }
 
+  delete state.paymentFindings[event.title];
   state.supportedUsd += expected.usd;
   state.zd -= expected.zd;
   state.ledger.push({
@@ -675,9 +682,11 @@ function checkCloseout() {
   if (!explainOk) messages.push("explanation must include advanced, supported, cash, variance, and rate/result language");
 
   if (messages.length) {
-    state.errors.push(`Closeout workbench: ${messages.join("; ")}.`);
+    state.closeoutFindings = messages;
+    state.closeoutChecked = false;
     setText("closeoutFindings", `Rework closeout: ${messages.join("; ")}.`);
   } else {
+    state.closeoutFindings = [];
     state.closeoutChecked = true;
     setText("closeoutFindings", "Closeout accepted: typed support, expected cash, denomination count, and explanation agree.");
   }
@@ -685,7 +694,11 @@ function checkCloseout() {
 }
 
 function submitAar() {
-  const findings = [...state.errors];
+  const findings = [
+    ...state.errors,
+    ...Object.values(state.paymentFindings || {}),
+    ...(state.closeoutFindings || []).map((finding) => `Closeout workbench: ${finding}`)
+  ];
   const roleChecks = Object.values(state.teamChecks || {}).filter(Boolean).length;
   const injectChecks = Object.values(state.injectChecks || {}).filter(Boolean).length;
   const decisionCount = state.ledger.length;
