@@ -1,0 +1,118 @@
+window.DRS_DATA = {
+  lessons: [
+    {
+      id: "accountability",
+      title: "Accountability Stack",
+      body: "Disbursing is clean only when money, documents, authority, rates, and explanation agree.",
+      why: "A drawer can balance and still fail if the transaction is unsupported or outside authority.",
+      do: "Check money, documents, authority, rate, and AAR explanation separately.",
+      failure: "Thinking cash balance means the mission is automatically clean.",
+      prompt: "Cash balances, but a receipt is missing. What catches the issue?",
+      choices: ["Cash count", "Support/document review", "Stress score"],
+      correct: 1,
+    },
+    {
+      id: "dd1081",
+      title: "DD 1081 Settlement",
+      body: "An advance must settle through returned cash/currency plus supported payments.",
+      why: "If learners lose the start point, they cannot defend the end point.",
+      do: "Track advance, supported payments, and returned accountability.",
+      failure: "Treating an advance like a vendor receipt.",
+      prompt: "$4,000 advance, $1,200 supported payments. Returned cash?",
+      choices: ["$2,800", "$1,200", "$4,000"],
+      correct: 0,
+    },
+    {
+      id: "dd2665",
+      title: "DD 2665 Daily Summary",
+      body: "Daily accountability requires correctly classifying increases, decreases, and ending cash.",
+      why: "Most closeout mistakes come from putting transactions on the wrong side.",
+      do: "Classify the event before calculating the balance.",
+      failure: "Treating a collection like a payment.",
+      prompt: "A $25 collection is a:",
+      choices: ["Decrease", "Increase", "No effect"],
+      correct: 1,
+    },
+    {
+      id: "docs",
+      title: "Support Documents",
+      body: "Every payment needs support. Missing or mismatched support is separate from cash variance.",
+      why: "Cash can balance while the packet still fails review.",
+      do: "Match vendor, amount, currency, and receipt status.",
+      failure: "Clearing Vendor C because the cash still balances.",
+      prompt: "Vendor C receipt is missing. Best action?",
+      choices: ["Clear closeout", "Hold/escalate", "Create receipt later"],
+      correct: 1,
+    },
+  ],
+  scenarios: [
+    {
+      id: "market",
+      title: "Operation Market Run",
+      summary: "Vendor payments, FRAGO rate change, missing support, and casualty inject.",
+      opord: "Support three approved vendor payments in Zarian Dinar. Use daily rate for exchanges. Notify DDO for missing support, variance, or inject.",
+      status: { threat: "Elevated", time: "0900-1200", funds: "Controlled", comms: "Primary" },
+      start: { usd: 4000, zd: 240000, supportedUsd: 0 },
+      expected: { usd: 3800, zd: 169000, supportedUsd: 800 },
+      packet: [
+        { label: "Vendor A receipt: 60,000 ZD", status: "ok" },
+        { label: "Vendor B receipt: 36,000 ZD", status: "ok" },
+        { label: "Vendor C receipt: missing", status: "missing" },
+        { label: "Exchange slip: $200 to 25,000 ZD", status: "ok" },
+        { label: "FRAGO note: daily rate changed to 125 ZD", status: "ok" },
+      ],
+      inject: {
+        title: "TCCC / Operational Inject",
+        headline: "Simulated blast injury near team vehicle.",
+        body: "Cash box and voucher packet are exposed during movement.",
+      },
+      events: [
+        {
+          title: "Vendor A",
+          detail: "Vendor A requests 60,000 ZD. Packet complete.",
+          choices: [
+            { label: "Pay Vendor A", correct: true, delta: { zd: -60000, supportedUsd: 500 }, note: "Supported payment. ZD decreases." },
+            { label: "Pay from USD drawer", correct: false, error: "MATH-004", note: "Wrong currency. Keep USD and ZD separate." },
+            { label: "Hold for no reason", correct: false, error: "AUTH-003", note: "Packet is complete and mission-authorized." },
+          ],
+        },
+        {
+          title: "Vendor B",
+          detail: "Vendor B requests 36,000 ZD. Packet complete.",
+          choices: [
+            { label: "Pay Vendor B", correct: true, delta: { zd: -36000, supportedUsd: 300 }, note: "Supported payment. Log it." },
+            { label: "Escalate missing support", correct: false, error: "DOC-003", note: "No support issue exists here." },
+            { label: "Revalue at budget rate", correct: false, error: "RATE-001", note: "No rate decision is needed." },
+          ],
+        },
+        {
+          title: "FRAGO 01",
+          detail: "DDO changes daily rate to 1 USD = 125 ZD for new accommodation exchanges.",
+          choices: [
+            { label: "Apply to future exchanges only", correct: true, flag: "rateFrago", note: "Correct. Do not revalue completed payments." },
+            { label: "Revalue all completed payments", correct: false, error: "RATE-002", note: "Completed transactions stay as recorded unless directed." },
+            { label: "Ignore FRAGO", correct: false, error: "COMM-002", note: "Mission instructions changed." },
+          ],
+        },
+        {
+          title: "Accommodation Exchange",
+          detail: "Exchange $200 USD for ZD after FRAGO.",
+          choices: [
+            { label: "Use new daily rate: 25,000 ZD", correct: true, delta: { usd: -200, zd: 25000 }, note: "$200 x 125 = 25,000 ZD." },
+            { label: "Use budget rate: 20,000 ZD", correct: false, error: "RATE-001", note: "Budget rate is not used for this exchange." },
+            { label: "Use old daily rate: 24,000 ZD", correct: false, error: "RATE-001", note: "FRAGO changed the rate." },
+          ],
+        },
+        {
+          title: "Vendor C",
+          detail: "Vendor C requests 50,000 ZD. Receipt packet is missing.",
+          choices: [
+            { label: "Hold/escalate until support is corrected", correct: true, flag: "unsupportedFound", note: "Correct. Cash availability does not fix missing support." },
+            { label: "Pay now, fix later", correct: false, error: "DOC-001", delta: { zd: -50000 }, note: "Unsupported payment created packet defect." },
+            { label: "Ask budget to approve support", correct: false, error: "AUTH-002", note: "Budget availability is not disbursing support." },
+          ],
+        },
+      ],
+    },
+  ],
+};

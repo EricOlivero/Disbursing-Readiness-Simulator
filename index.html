@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#16211e" />
+    <title>Disbursing Readiness Simulator</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="disclaimerGate" class="disclaimer-gate">
+      <section class="disclaimer-card">
+        <span class="status-pill">Prototype Notice</span>
+        <h1>Before Training</h1>
+        <p>
+          This is a supplemental prototype for disbursing readiness practice. It uses fictional scenarios,
+          simplified form logic, and training-only currency. It does not replace official policy, local SOP,
+          instructor judgment, or TCCC certification.
+        </p>
+        <div class="notice-list">
+          <div>Use for controlled feedback and learning only.</div>
+          <div>Do not enter PII, real vendor data, or protected course content.</div>
+          <div>Finance/TCCC SMEs should validate content before formal use.</div>
+        </div>
+        <label class="ack-line"><input id="disclaimerAck" type="checkbox" /> I understand this is a prototype training simulator.</label>
+        <button id="acceptDisclaimer" class="primary">Enter Simulator</button>
+      </section>
+    </div>
+    <main class="app">
+      <section id="home" class="screen active-screen">
+        <div class="hero">
+          <span class="status-pill">Briefing Room</span>
+          <h1>Disbursing Readiness Simulator</h1>
+          <p>Practice deployed finance decisions with cash, forms, rates, packets, FRAGOs, TCCC injects, closeout, and AAR.</p>
+          <div class="prototype-banner">Prototype for controlled unit feedback. Fictional scenario. SME review required before formal training use.</div>
+          <button class="primary" data-action="start-demo">Start Demo Mission</button>
+        </div>
+
+        <div class="mission-card dark-card">
+          <span>Today's readiness mission</span>
+          <h2 id="homeMissionTitle">Operation Market Run</h2>
+          <p id="homeMissionSummary">Vendor payments, FRAGO rate change, missing support, and casualty inject.</p>
+        </div>
+
+        <div class="learn-first-card">
+          <span class="eyebrow">New learner path</span>
+          <h2>Learn before you deploy.</h2>
+          <p>Start here if you have not practiced disbursing recently. Build the core mental model before entering the mission.</p>
+          <div class="learn-first-list">
+            <div>Accountability Stack</div>
+            <div>DD 1081 Settlement</div>
+            <div>DD 2665 Daily Summary</div>
+            <div>Support Documents</div>
+          </div>
+          <button class="secondary" data-nav="training">Start Training Bay</button>
+        </div>
+
+        <div class="accountability-stack">
+          <span>Accountability Stack</span>
+          <div><strong>Money</strong><em id="stackMoney">Pending</em></div>
+          <div><strong>Documents</strong><em id="stackDocs">Packet review</em></div>
+          <div><strong>Authority</strong><em>DDO escalation</em></div>
+          <div><strong>Explanation</strong><em>AAR required</em></div>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Scenario library</span>
+          <label for="scenarioSelect">Mission</label>
+          <select id="scenarioSelect"></select>
+          <button class="secondary" data-action="load-scenario">Load Mission</button>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Local profile</span>
+          <label for="profileName">Name or callsign</label>
+          <input id="profileName" placeholder="A1C Example" />
+          <label for="modeSelect">Mode</label>
+          <select id="modeSelect">
+            <option>Individual</option>
+            <option>Same-device team</option>
+          </select>
+          <button class="secondary" data-action="save-profile">Save Locally</button>
+          <p id="profileStatus" class="muted">No account. Progress stays on this device.</p>
+        </div>
+
+        <div class="team-setup-card">
+          <span class="eyebrow">Team training setup</span>
+          <h2>Same-device paying agent team</h2>
+          <p>For training day: members learn individually, then form a team and rotate through role responsibilities during the mission.</p>
+          <label for="teamName">Team name</label>
+          <input id="teamName" placeholder="Team Alpha" />
+          <div class="role-input-grid">
+            <label>Cashier <input id="roleCashier" placeholder="Name" /></label>
+            <label>Recorder <input id="roleRecorder" placeholder="Name" /></label>
+            <label>Reviewer <input id="roleReviewer" placeholder="Name" /></label>
+            <label>Team chief <input id="roleChief" placeholder="Name" /></label>
+            <label>TCCC/Safety <input id="roleSafety" placeholder="Name" /></label>
+          </div>
+          <button class="secondary" data-action="save-team">Save Team</button>
+          <p id="teamStatus" class="muted">Team not configured.</p>
+        </div>
+      </section>
+
+      <section id="training" class="screen">
+        <header class="screen-header">
+          <span class="status-pill">Training Bay</span>
+          <strong id="lessonCounter">01 / 08</strong>
+        </header>
+
+        <div class="lesson-hero">
+          <h2 id="lessonTitle">Accountability Stack</h2>
+          <p id="lessonBody">Disbursing is only clean when money, documents, authority, rates, and explanation agree.</p>
+        </div>
+
+        <div class="lesson-blocks">
+          <article><span>Why</span><p id="lessonWhy"></p></article>
+          <article><span>Do</span><p id="lessonDo"></p></article>
+          <article class="warning"><span>Failure</span><p id="lessonFailure"></p></article>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Interactive check</span>
+          <p id="lessonPrompt"></p>
+          <div id="lessonChoices" class="choice-list"></div>
+          <p id="lessonFeedback" class="feedback"></p>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Object lab</span>
+          <div class="segmented">
+            <button class="selected" data-lab="settlement">DD 1081</button>
+            <button data-lab="sorter">DD 2665</button>
+            <button data-lab="packet">Packet</button>
+          </div>
+          <div id="labContent"></div>
+        </div>
+      </section>
+
+      <section id="mission" class="screen">
+        <header class="screen-header">
+          <span class="status-pill amber">Mission Board</span>
+          <strong>Stress <span id="stressScore">0</span></strong>
+        </header>
+
+        <div class="mission-status">
+          <div><span>Threat</span><strong id="statusThreat">Elevated</strong></div>
+          <div><span>Time</span><strong id="statusTime">0900-1200</strong></div>
+          <div><span>Funds</span><strong id="statusFunds">Controlled</strong></div>
+          <div><span>Comms</span><strong id="statusComms">Primary</strong></div>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">OPORD</span>
+          <h2 id="opordTitle">Operation Market Run</h2>
+          <p id="opordText"></p>
+          <button id="briefButton" class="secondary" data-action="mark-briefed">Mark Briefing Reviewed</button>
+          <p id="briefStatus" class="muted">Briefing not reviewed.</p>
+        </div>
+
+        <div class="timeline" id="timeline"></div>
+
+        <div class="event-card">
+          <span id="eventCount">Decision</span>
+          <h2 id="eventTitle">Ready</h2>
+          <p id="eventDetail">Load a mission and begin.</p>
+          <label for="confidenceSelect">Confidence</label>
+          <select id="confidenceSelect">
+            <option>High</option>
+            <option selected>Medium</option>
+            <option>Low</option>
+          </select>
+          <div id="eventChoices" class="choice-list"></div>
+          <p id="missionCoach" class="feedback"></p>
+        </div>
+
+        <div class="ledger card">
+          <span class="eyebrow">Live Ledger</span>
+          <div class="ledger-totals">
+            <div><span>USD</span><strong id="usdBalance">$4,000</strong></div>
+            <div><span>ZD</span><strong id="zdBalance">240,000</strong></div>
+            <div><span>Support</span><strong id="supportBalance">$0 eq</strong></div>
+          </div>
+          <div id="ledgerHistory" class="ledger-history">No decisions yet.</div>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Team Handoff</span>
+          <div class="active-role-panel">
+            <span>Active role</span>
+            <h2 id="activeRoleTitle">Cashier</h2>
+            <p id="activeRolePrompt">Confirm physical cash and currency separation before mission closeout.</p>
+            <button class="secondary" data-action="complete-role-step">Complete Role Step</button>
+          </div>
+          <div id="roleProgress" class="role-progress"></div>
+          <div id="teamChecks" class="check-grid"></div>
+        </div>
+      </section>
+
+      <section id="inject" class="screen">
+        <header class="screen-header">
+          <span class="status-pill red">Inject</span>
+          <strong>Operational</strong>
+        </header>
+        <div class="alert-card">
+          <span id="injectTitle">TCCC / Operational Inject</span>
+          <h2 id="injectHeadline">Mission disrupted.</h2>
+          <p id="injectBody">Act within trained scope, communicate, secure funds and documents if possible, and recover accountability.</p>
+        </div>
+        <div id="injectChecks" class="check-grid"></div>
+      </section>
+
+      <section id="closeout" class="screen">
+        <header class="screen-header">
+          <span class="status-pill">Closeout Table</span>
+          <strong>Workbench</strong>
+        </header>
+
+        <div class="stepper"><span class="done"></span><span class="done"></span><span class="active"></span><span></span><span></span></div>
+
+        <div class="drawer-card">
+          <h2>Cash Count</h2>
+          <div class="currency-tabs">
+            <button class="selected" data-currency-tab="usd">USD</button>
+            <button data-currency-tab="zd">ZD</button>
+          </div>
+          <div id="usdDrawer" class="drawer-pane"></div>
+          <div id="zdDrawer" class="drawer-pane hidden"></div>
+          <div class="variance-row"><span>Expected USD</span><strong id="expectedUsd">$0</strong></div>
+          <div class="variance-row"><span>Physical USD</span><strong id="physicalUsd">$0</strong></div>
+          <div class="variance-row"><span>USD Variance</span><strong id="usdVariance">$0</strong></div>
+          <div class="variance-row"><span>Expected ZD</span><strong id="expectedZd">0</strong></div>
+          <div class="variance-row"><span>Physical ZD</span><strong id="physicalZd">0</strong></div>
+          <div class="variance-row"><span>ZD Variance</span><strong id="zdVariance">0</strong></div>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Voucher Packet</span>
+          <div id="packetList" class="packet-list"></div>
+        </div>
+
+        <div class="form-stack">
+          <div class="form-card"><span>DD 1081</span><label>Returned USD</label><input id="returnUsd" type="number" /><label>Returned ZD</label><input id="returnZd" type="number" /></div>
+          <div class="form-card"><span>DD 2665</span><label>Supported decreases</label><input id="formDecreases" type="number" /><label>Increases / collections</label><input id="formIncreases" type="number" value="0" /></div>
+        </div>
+
+        <div class="card">
+          <span class="eyebrow">Structured Findings</span>
+          <label>Cash status</label><select id="findingCash"><option>Balanced</option><option>Short</option><option>Over</option><option>Unresolved</option></select>
+          <label>Documentation</label><select id="findingDocs"><option>Missing support identified</option><option>Fully supported</option><option>Mismatched support</option><option>Unresolved support issue</option></select>
+          <label>Escalation</label><select id="findingEscalation"><option>Notify DDO</option><option>Notify commander only</option><option>Notify budget officer only</option><option>No notification required</option></select>
+          <label>Rate / FRAGO</label><select id="findingRate"><option>Future exchanges only</option><option>Revalue all transactions</option><option>No rate impact</option><option>Unresolved rate issue</option></select>
+          <label>Inject recovery</label><select id="findingInject"><option>Recovered accountability</option><option>Funds/documents unsecured</option><option>Medical overreach</option><option>Unresolved inject impact</option></select>
+          <label>Explain the result</label><textarea id="aarExplanation" rows="4" placeholder="Explain cash, support, escalation, FRAGO, and inject recovery."></textarea>
+          <button class="primary" data-action="submit-aar">Submit Closeout</button>
+        </div>
+      </section>
+
+      <section id="aar" class="screen">
+        <header class="screen-header">
+          <span class="status-pill">AAR Room</span>
+          <strong>Result</strong>
+        </header>
+        <div id="aarResult" class="aar-result">
+          <span>Intermediate Readiness</span>
+          <h2>Pending</h2>
+          <p>Submit closeout to generate AAR.</p>
+        </div>
+        <div id="aarCards" class="debrief-grid"></div>
+        <div class="card"><span class="eyebrow">Remediation Queue</span><div id="remediationQueue">No remediation yet.</div></div>
+        <div class="card"><span class="eyebrow">Detailed AAR</span><pre id="detailedAar">No AAR yet.</pre></div>
+        <button class="primary" data-action="replay">Replay With New Numbers</button>
+      </section>
+
+      <nav class="bottom-nav">
+        <button class="active" data-nav="home">Brief</button>
+        <button data-nav="training">Train</button>
+        <button data-nav="mission">Mission</button>
+        <button data-nav="inject">Inject</button>
+        <button data-nav="closeout">Close</button>
+        <button data-nav="aar">AAR</button>
+      </nav>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

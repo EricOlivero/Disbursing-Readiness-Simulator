@@ -1,0 +1,10 @@
+{
+  "name": "Disbursing Readiness Simulator",
+  "short_name": "DRS",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e7ece9",
+  "theme_color": "#16211e",
+  "description": "Offline-first Air Force finance disbursing readiness simulator prototype.",
+  "icons": []
+}
