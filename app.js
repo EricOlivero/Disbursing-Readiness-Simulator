@@ -178,6 +178,10 @@ function renderTraining() {
   recomputeTrainingComplete();
 
   const allLessons = lessons();
+  if (lessonCompleteCount() === 0 && state.lesson > 0) {
+    state.lesson = 0;
+    save();
+  }
   const active = allLessons[state.lesson] || allLessons[0] || {};
   const complete = !!state.completedLessons[active.id];
   const count = lessonCompleteCount();
@@ -215,7 +219,37 @@ function renderTraining() {
   }
 
   setText("lessonFeedback", complete ? "Block complete. You can review it again or continue through the remaining blocks." : "");
+  renderTrainingObjectives();
   renderLab(active);
+}
+
+function renderTrainingObjectives() {
+  const target = $("trainingObjectives");
+  if (!target) return;
+
+  const objectiveText = {
+    "accountability-stack": "Explain who is accountable for funds at each point.",
+    "dd1081-purpose": "Explain what DD 1081 proves during advance and return.",
+    "dd2665-purpose": "Explain what DD 2665 summarizes during daily accountability.",
+    "voucher-support": "Identify whether a payment packet is supportable.",
+    "foreign-currency": "Choose and explain the directed currency rate.",
+    "opord-frago": "Read an OPORD/FRAGO before cash movement.",
+    "tccc-accountability": "Respond to an inject without losing life-safety or cash accountability.",
+    "closeout-ritual": "Balance cash using count, support, and explanation.",
+    "readiness-check": "Brief the minimum standard before team mission execution."
+  };
+
+  target.innerHTML = lessons().map((lesson, index) => {
+    const done = !!state.completedLessons[lesson.id];
+    const active = index === state.lesson;
+    return `
+      <button type="button" class="objective-item ${done ? "done" : ""} ${active ? "active" : ""}" data-lesson-jump="${index}">
+        <span>${done ? "Complete" : active ? "Current" : `Block ${index + 1}`}</span>
+        <strong>${escapeHtml(lesson.title || `Block ${index + 1}`)}</strong>
+        <em>${escapeHtml(objectiveText[lesson.id] || "Complete this learning objective before mission.")}</em>
+      </button>
+    `;
+  }).join("");
 }
 
 function paragraphs(value) {
@@ -565,6 +599,27 @@ document.addEventListener("click", (event) => {
     renderMission();
     return;
   }
+  if (action === "next-lesson") {
+    state.lesson = Math.min(state.lesson + 1, Math.max(lessons().length - 1, 0));
+    save();
+    renderTraining();
+    return;
+  }
+  if (action === "previous-lesson") {
+    state.lesson = Math.max(state.lesson - 1, 0);
+    save();
+    renderTraining();
+    return;
+  }
+  if (action === "restart-training") {
+    state.lesson = 0;
+    state.completedLessons = {};
+    state.trainingComplete = false;
+    state.trainingGateMessage = "Training restarted. Begin with Block 1 and complete each objective before mission.";
+    save();
+    show("training");
+    return;
+  }
   if (action === "submit-aar") {
     submitAar();
     show("aar");
@@ -579,6 +634,14 @@ document.addEventListener("click", (event) => {
   const lessonChoice = event.target.closest("[data-lesson-choice]");
   if (lessonChoice) {
     completeLesson(Number(lessonChoice.dataset.lessonChoice));
+    return;
+  }
+
+  const lessonJump = event.target.closest("[data-lesson-jump]");
+  if (lessonJump) {
+    state.lesson = Number(lessonJump.dataset.lessonJump);
+    save();
+    renderTraining();
     return;
   }
 
