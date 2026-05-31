@@ -1,4 +1,5 @@
 const DATA = window.DRS_DATA || {};
+const APP_VERSION = "training-objectives-v1";
 const $ = (id) => document.getElementById(id);
 const money = (n) => Number(n || 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
 const whole = (n) => Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -33,7 +34,8 @@ const baseState = {
   roleStep: 0,
   roleStepsDone: [],
   disclaimerAccepted: false,
-  aar: null
+  aar: null,
+  appVersion: APP_VERSION
 };
 
 const storedState = JSON.parse(localStorage.getItem("drsPolishedState") || "null");
@@ -44,6 +46,15 @@ state.injectChecks = state.injectChecks || {};
 state.ledger = state.ledger || [];
 state.flags = state.flags || [];
 state.errors = state.errors || [];
+
+if (state.appVersion !== APP_VERSION) {
+  state.lesson = 0;
+  state.completedLessons = {};
+  state.trainingComplete = false;
+  state.trainingGateMessage = "Training reset for the updated curriculum. Begin with Block 1 and complete each objective before mission.";
+  state.appVersion = APP_VERSION;
+  save();
+}
 
 function save() {
   localStorage.setItem("drsPolishedState", JSON.stringify(state));
