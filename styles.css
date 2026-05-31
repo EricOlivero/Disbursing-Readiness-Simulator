@@ -53,7 +53,8 @@ button.primary {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   min-height: 46px;
   border: 1px solid var(--line);
@@ -61,6 +62,11 @@ select {
   padding: 10px 12px;
   background: #fff;
   color: var(--ink);
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.4;
 }
 
 label {
@@ -406,8 +412,55 @@ li {
 
 .drawer-grid {
   display: grid;
+  gap: 8px;
+}
+
+.payment-workbench {
+  margin: 12px 0;
+}
+
+.workbench-card,
+.closeout-answer {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  border-radius: 8px;
+  background: #f0f6ff;
+}
+
+.drawer-brief {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.drawer-brief em,
+.hint {
+  color: var(--muted);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.drawer-section {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fbfa;
+}
+
+.drawer-section h3 {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.danger {
+  color: var(--danger);
 }
 
 .bottom-nav {

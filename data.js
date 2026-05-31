@@ -452,6 +452,8 @@ window.DRS_DATA = {
       comms: "Intermittent tactical net",
       startingUsd: 4000,
       startingZd: 240000,
+      zdDenominations: ["50,000", "10,000", "5,000", "1,000", "500", "100"],
+      zdDenominationsNumeric: [50000, 10000, 5000, 1000, 500, 100],
       opordTitle: "OPORD 26-01: Market Ledger",
       opord: [
         "1. Situation. Forward Operating Site Resolute is restoring limited services after a storm and civil disruption. Local vendors accept Zarian Dinar (ZD). Recent rate movement and intermittent communications increase risk of unsupported payments and poor closeout. Route Hawk has moderate IED and small-arms risk.",
@@ -507,7 +509,14 @@ window.DRS_DATA = {
           title: "Water Containers Purchase",
           time: "0920L",
           narrative: "Vendor One offers water containers for 72,000 ZD. The receipt has vendor name, date, amount, and purpose. OPORD says use the daily rate of 60 ZD/USD.",
-          question: "How should the team record this payment?",
+          question: "Type the payment, rate, USD equivalent, support status, and closeout explanation.",
+          expectedPayment: {
+            task: "Pay 72,000 ZD at the directed daily rate of 60 ZD/USD. The support is complete.",
+            zd: 72000,
+            rate: 60,
+            usd: 1200,
+            support: "complete"
+          },
           choices: [
             {
               label: "Record 72,000 ZD as a $1,200 supported payment at 60 ZD/USD.",
@@ -567,7 +576,14 @@ window.DRS_DATA = {
           title: "Generator Belts and Weak Receipt",
           time: "1010L",
           narrative: "Vendor Two has generator belts for 22,800 ZD. The vendor can sign the receipt but initially leaves the purpose blank.",
-          question: "What should the paying agent team do?",
+          question: "Before payment, decide support status. If corrected, type the payment, rate, USD equivalent, and closeout explanation.",
+          expectedPayment: {
+            task: "Require the purpose to be completed, then pay 22,800 ZD at 60 ZD/USD. Once corrected, support is complete.",
+            zd: 22800,
+            rate: 60,
+            usd: 380,
+            support: "complete"
+          },
           choices: [
             {
               label: "Require the purpose to be completed before accepting the receipt, then record $380 supported.",

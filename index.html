@@ -157,6 +157,7 @@
           </select>
         </label>
         <h3 id="eventQuestion">What do you do?</h3>
+        <div id="paymentWorkbench" class="payment-workbench"></div>
         <div id="eventChoices" class="choice-stack"></div>
       </article>
 
@@ -185,6 +186,18 @@
       <div class="card">
         <h2>Physical Cash Count</h2>
         <div id="drawer" class="drawer-grid"></div>
+        <div class="closeout-answer">
+          <label>Supported payments you are claiming
+            <input id="closeoutSupportedInput" type="number" min="0" step="0.01" placeholder="Example: 1580.00">
+          </label>
+          <label>Cash expected back
+            <input id="closeoutExpectedInput" type="number" min="0" step="0.01" placeholder="Example: 2420.00">
+          </label>
+          <label>Explain your closeout result
+            <textarea id="closeoutExplanation" rows="4" placeholder="Advanced __; supported __; cash counted __; variance __ because __."></textarea>
+          </label>
+          <button type="button" data-action="check-closeout">Check Closeout</button>
+        </div>
         <p><strong>Physical USD:</strong> <span id="physicalUsd">$0</span></p>
         <p><strong>Physical ZD:</strong> <span id="physicalZd">0 ZD</span></p>
         <p><strong>Supported Payments:</strong> <span id="supportedUsd">$0</span></p>

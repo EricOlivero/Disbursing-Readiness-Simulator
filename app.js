@@ -1,5 +1,5 @@
 const DATA = window.DRS_DATA || {};
-const APP_VERSION = "training-objectives-v1";
+const APP_VERSION = "constructed-response-v1";
 const $ = (id) => document.getElementById(id);
 const money = (n) => Number(n || 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
 const whole = (n) => Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -17,6 +17,8 @@ const baseState = {
   errors: [],
   ledger: [],
   flags: [],
+  paymentAttempts: {},
+  closeoutChecked: false,
   briefed: false,
   completedLessons: {},
   trainingComplete: false,
@@ -46,6 +48,7 @@ state.injectChecks = state.injectChecks || {};
 state.ledger = state.ledger || [];
 state.flags = state.flags || [];
 state.errors = state.errors || [];
+state.paymentAttempts = state.paymentAttempts || {};
 
 if (state.appVersion !== APP_VERSION) {
   state.lesson = 0;
@@ -219,12 +222,12 @@ function renderTraining() {
   const choices = $("lessonChoices");
   if (choices) {
     choices.innerHTML = "";
-    (active.choices || []).forEach((choice, index) => {
+    orderedChoices(active.choices || [], state.lesson + 1).forEach(({ choice, originalIndex }) => {
       const btn = document.createElement("button");
       btn.className = "choice-btn";
       btn.type = "button";
-      btn.dataset.lessonChoice = String(index);
-      btn.innerHTML = `<strong>${choice.label || choice.text || `Option ${index + 1}`}</strong><span>${choice.detail || ""}</span>`;
+      btn.dataset.lessonChoice = String(originalIndex);
+      btn.innerHTML = `<strong>${choice.label || choice.text || "Option"}</strong><span>${choice.detail || ""}</span>`;
       choices.appendChild(btn);
     });
   }
@@ -360,6 +363,8 @@ function loadScenario(id, resetMission = false) {
     state.errors = [];
     state.ledger = [];
     state.flags = [];
+    state.paymentAttempts = {};
+    state.closeoutChecked = false;
     state.briefed = false;
     state.teamChecks = {};
     state.injectChecks = {};
@@ -409,18 +414,115 @@ function renderEvent(event) {
   setText("eventType", event.type || "Disbursing decision");
   setText("eventNarrative", event.narrative || event.description || "Review the prompt and select the action that protects accountability.");
   setText("eventQuestion", event.question || "What do you do?");
+  renderPaymentWorkbench(event);
 
   const choices = $("eventChoices");
   if (!choices) return;
   choices.innerHTML = "";
-  (event.choices || []).forEach((choice, index) => {
+  if (event.expectedPayment) {
+    choices.innerHTML = `<p class="feedback">This event requires typed payment work. Enter the amount, rate, support, and explanation above.</p>`;
+    return;
+  }
+  orderedChoices(event.choices || [], state.eventIndex + 1).forEach(({ choice, originalIndex }) => {
     const btn = document.createElement("button");
     btn.className = "choice-btn";
     btn.type = "button";
-    btn.dataset.eventChoice = String(index);
-    btn.innerHTML = `<strong>${choice.label || choice.text || `Decision ${index + 1}`}</strong><span>${choice.detail || ""}</span>`;
+    btn.dataset.eventChoice = String(originalIndex);
+    btn.innerHTML = `<strong>${choice.label || choice.text || "Decision"}</strong><span>${choice.detail || ""}</span>`;
     choices.appendChild(btn);
   });
+}
+
+function orderedChoices(choices, seed) {
+  return choices.map((choice, originalIndex) => ({ choice, originalIndex }))
+    .sort((a, b) => ((a.originalIndex + seed) % choices.length) - ((b.originalIndex + seed) % choices.length));
+}
+
+function renderPaymentWorkbench(event) {
+  const target = $("paymentWorkbench");
+  if (!target) return;
+  if (!event.expectedPayment) {
+    target.innerHTML = "";
+    return;
+  }
+
+  const expected = event.expectedPayment;
+  const prior = state.paymentAttempts[event.title] || {};
+  target.innerHTML = `
+    <div class="workbench-card">
+      <p class="eyebrow">Typed disbursing action</p>
+      <div class="drawer-brief">
+        <strong>Cash drawer before payment</strong>
+        <span>${money(state.usd)} and ${whole(state.zd)} ZD available</span>
+        <em>ZD denominations available: ${escapeHtml((scenario().zdDenominations || ["50,000", "10,000", "5,000", "1,000"]).join(", "))}</em>
+      </div>
+      <label>Amount paid in ZD
+        <input id="payZdInput" type="number" min="0" step="1" value="${escapeHtml(prior.zd || "")}" placeholder="Example: 72000">
+      </label>
+      <label>Rate used, ZD per USD
+        <input id="payRateInput" type="number" min="0" step="0.01" value="${escapeHtml(prior.rate || "")}" placeholder="Example: 60">
+      </label>
+      <label>USD equivalent
+        <input id="payUsdInput" type="number" min="0" step="0.01" value="${escapeHtml(prior.usd || "")}" placeholder="Example: 1200.00">
+      </label>
+      <label>Support check
+        <select id="paySupportInput">
+          <option value="">Select support status</option>
+          <option value="complete" ${prior.support === "complete" ? "selected" : ""}>Complete support: vendor, date, purpose, amount, acknowledgement</option>
+          <option value="weak" ${prior.support === "weak" ? "selected" : ""}>Weak support: missing required detail</option>
+          <option value="none" ${prior.support === "none" ? "selected" : ""}>No support</option>
+        </select>
+      </label>
+      <label>Explain how you paid and how it will close out
+        <textarea id="payExplainInput" rows="4" placeholder="I paid __ ZD at __ ZD/USD, recorded $__ supported, and kept __ as evidence.">${escapeHtml(prior.explain || "")}</textarea>
+      </label>
+      <button type="button" data-action="submit-typed-payment">Submit Payment Work</button>
+      <p class="hint">Expected task: ${escapeHtml(expected.task || "Calculate and explain the payment using the directed rate.")}</p>
+    </div>
+  `;
+}
+
+function submitTypedPayment() {
+  const event = events()[state.eventIndex] || {};
+  const expected = event.expectedPayment;
+  if (!expected) return;
+
+  const zd = Number($("payZdInput")?.value || 0);
+  const rate = Number($("payRateInput")?.value || 0);
+  const usd = Number($("payUsdInput")?.value || 0);
+  const support = $("paySupportInput")?.value || "";
+  const explain = $("payExplainInput")?.value || "";
+  state.paymentAttempts[event.title] = { zd, rate, usd, support, explain };
+
+  const feedback = $("eventChoices");
+  const mathOk = Math.abs(zd - expected.zd) < 0.01 && Math.abs(rate - expected.rate) < 0.01 && Math.abs(usd - expected.usd) < 0.05;
+  const supportOk = support === expected.support;
+  const explainOk = explain.trim().length >= 40 && /support|receipt|vendor|purpose|close/i.test(explain);
+
+  if (!mathOk || !supportOk || !explainOk) {
+    const misses = [];
+    if (!mathOk) misses.push("math/rate does not match the OPORD or FRAGO");
+    if (!supportOk) misses.push("support status is wrong");
+    if (!explainOk) misses.push("explanation is too thin for closeout");
+    state.stress += 10;
+    state.errors.push(`${event.title}: Typed payment remediation needed - ${misses.join(", ")}.`);
+    if (feedback) feedback.innerHTML = `<p class="feedback danger">Rework this payment: ${escapeHtml(misses.join("; "))}.</p>`;
+    save();
+    return;
+  }
+
+  state.supportedUsd += expected.usd;
+  state.zd -= expected.zd;
+  state.ledger.push({
+    time: event.time || `Event ${state.eventIndex + 1}`,
+    event: event.title || "Typed payment",
+    decision: `${whole(expected.zd)} ZD at ${expected.rate} ZD/USD = ${money(expected.usd)}`,
+    result: "Supported typed payment",
+    confidence: $("confidence")?.value || "medium"
+  });
+  state.eventIndex = Math.min(state.eventIndex + 1, Math.max(events().length - 1, 0));
+  save();
+  renderMission();
 }
 
 function chooseEvent(index) {
@@ -506,11 +608,19 @@ function renderInject() {
 }
 
 function physicalUsd() {
-  return Number(state.usd || 0);
+  let total = 0;
+  document.querySelectorAll("[data-usd-denom]").forEach((input) => {
+    total += Number(input.dataset.usdDenom || 0) * Number(input.value || 0);
+  });
+  return total;
 }
 
 function physicalZd() {
-  return Number(state.zd || 0);
+  let total = 0;
+  document.querySelectorAll("[data-zd-denom]").forEach((input) => {
+    total += Number(input.dataset.zdDenom || 0) * Number(input.value || 0);
+  });
+  return total;
 }
 
 function renderCloseout() {
@@ -524,19 +634,54 @@ function renderCloseout() {
 function renderDrawers() {
   const drawer = $("drawer");
   if (!drawer) return;
-  const denominations = [
-    ["100", 100],
-    ["50", 50],
-    ["20", 20],
-    ["10", 10],
-    ["5", 5],
-    ["1", 1]
-  ];
-  drawer.innerHTML = denominations.map(([label, value]) => `
-    <label>${label}
-      <input type="number" min="0" data-denom="${value}" placeholder="0">
-    </label>
-  `).join("");
+  const usdDenoms = [100, 50, 20, 10, 5, 1];
+  const zdDenoms = scenario().zdDenominationsNumeric || [50000, 10000, 5000, 1000, 500, 100];
+  drawer.innerHTML = `
+    <div class="drawer-section">
+      <h3>USD Drawer</h3>
+      ${usdDenoms.map((value) => `
+        <label>$${value}
+          <input type="number" min="0" data-usd-denom="${value}" placeholder="0">
+        </label>
+      `).join("")}
+    </div>
+    <div class="drawer-section">
+      <h3>ZD Drawer</h3>
+      ${zdDenoms.map((value) => `
+        <label>${whole(value)} ZD
+          <input type="number" min="0" data-zd-denom="${value}" placeholder="0">
+        </label>
+      `).join("")}
+    </div>
+  `;
+}
+
+function checkCloseout() {
+  const supported = Number($("closeoutSupportedInput")?.value || 0);
+  const expectedBack = Number($("closeoutExpectedInput")?.value || 0);
+  const explanation = $("closeoutExplanation")?.value || "";
+  const expectedSupported = Number(state.supportedUsd || 0);
+  const expectedCashBack = Number((scenario().startingUsd || 4000) - expectedSupported);
+  const countedUsdEquivalent = physicalUsd() + (physicalZd() / 60);
+  const supportOk = Math.abs(supported - expectedSupported) < 0.05;
+  const expectedOk = Math.abs(expectedBack - expectedCashBack) < 0.05;
+  const countOk = Math.abs(countedUsdEquivalent - expectedCashBack) < 2;
+  const explainOk = explanation.trim().length >= 55 && /advanced|supported|cash|variance|rate/i.test(explanation);
+  const messages = [];
+
+  if (!supportOk) messages.push(`supported payments should be ${money(expectedSupported)}`);
+  if (!expectedOk) messages.push(`expected cash back should be ${money(expectedCashBack)}`);
+  if (!countOk) messages.push("denomination count does not support the expected cash back");
+  if (!explainOk) messages.push("explanation must include advanced, supported, cash, variance, and rate/result language");
+
+  if (messages.length) {
+    state.errors.push(`Closeout workbench: ${messages.join("; ")}.`);
+    setText("closeoutFindings", `Rework closeout: ${messages.join("; ")}.`);
+  } else {
+    state.closeoutChecked = true;
+    setText("closeoutFindings", "Closeout accepted: typed support, expected cash, denomination count, and explanation agree.");
+  }
+  save();
 }
 
 function submitAar() {
@@ -547,6 +692,7 @@ function submitAar() {
 
   if (!state.trainingComplete) findings.push("Training Bay was not completed before mission execution.");
   if (!state.briefed) findings.push("Team did not mark OPORD brief complete before execution.");
+  if (!state.closeoutChecked) findings.push("Closeout workbench was not successfully checked before AAR.");
   if (roleChecks < 5) findings.push("Team role cross-check was incomplete.");
   if (injectChecks < 4) findings.push("TCCC/accountability interruption checklist was incomplete.");
   if (decisionCount < events().length) findings.push("Mission timeline was not fully executed.");
@@ -608,6 +754,14 @@ document.addEventListener("click", (event) => {
     state.briefed = true;
     save();
     renderMission();
+    return;
+  }
+  if (action === "submit-typed-payment") {
+    submitTypedPayment();
+    return;
+  }
+  if (action === "check-closeout") {
+    checkCloseout();
     return;
   }
   if (action === "next-lesson") {
@@ -689,6 +843,10 @@ document.addEventListener("input", (event) => {
     state.profile = event.target.value;
     save();
     renderHome();
+  }
+  if (event.target.matches("[data-usd-denom], [data-zd-denom]")) {
+    setText("physicalUsd", money(physicalUsd()));
+    setText("physicalZd", `${whole(physicalZd())} ZD`);
   }
 });
 
