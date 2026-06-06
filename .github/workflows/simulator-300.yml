@@ -1,0 +1,56 @@
+name: DRS 300 Browser Simulations
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "app.js"
+      - "data.js"
+      - "index.html"
+      - "styles.css"
+      - "service-worker.js"
+      - "tests/**"
+      - "playwright.config.js"
+      - "package.json"
+      - ".github/workflows/simulator-300.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install test dependencies
+        run: npm install
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start simulator
+        run: |
+          npm run serve > simulator-server.log 2>&1 &
+          npx wait-on http://127.0.0.1:4173
+
+      - name: Run 300 browser simulations
+        env:
+          DRS_URL: http://127.0.0.1:4173
+        run: npm run test:300
+
+      - name: Upload HTML report, traces, screenshots, and videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drs-300-browser-report
+          path: |
+            playwright-report/
+            test-results/
+            simulator-server.log
+          retention-days: 30
