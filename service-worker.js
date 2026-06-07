@@ -39,3 +39,4 @@ self.addEventListener("fetch", (event) => {
       .catch(() => caches.match(event.request).then((cached) => cached || caches.match("./index.html")))
   );
 });
+// Training Bay mastery release: 2026-06-07

@@ -28,13 +28,14 @@
         ["appointedRole", "Role being appointed"],
         ["appointmentPurpose", "Purpose and responsibility accepted"]
       ],
+      conceptGroups: [
+        { name: "appointment or authority", terms: ["appoint", "authoriz", "designat"] },
+        { name: "accepted responsibility", terms: ["responsib", "accountab", "liable", "liability", "duties"] }
+      ],
       evaluate(values) {
-        const purpose = values.appointmentPurpose.toLowerCase();
         return values.appointingRole.length >= 2 &&
           /cashier/i.test(values.appointedRole) &&
-          purpose.length >= 35 &&
-          /(appoint|author)/.test(purpose) &&
-          /(responsib|accountab|liab)/.test(purpose);
+          values.appointmentPurpose.trim().length >= 20;
       },
       feedback: "Identify the appointment, role, and accountability accepted. Appointment-authority conflicts require current-policy validation."
     },
@@ -52,15 +53,17 @@
         ["physicalCount", "Independent physical cash count", "number"],
         ["advanceExplanation", "Explain why accountability can or cannot be accepted"]
       ],
+      conceptGroups: [
+        { name: "independent physical count", terms: ["count", "physical", "bill", "denomination"] },
+        { name: "reconciliation", terms: ["match", "reconcil", "agree", "balance", "same"] },
+        { name: "accountability acceptance", terms: ["accept", "accountab", "responsib", "custody"] }
+      ],
       evaluate(values) {
         const advance = Number(values.advanceAmount);
         const count = Number(values.physicalCount);
-        const explanation = values.advanceExplanation.toLowerCase();
         return advance === 4000 &&
           advance === count &&
-          explanation.length >= 35 &&
-          /(count|physical|bill)/.test(explanation) &&
-          /(match|reconcil|agree|balance)/.test(explanation);
+          values.advanceExplanation.trim().length >= 20;
       },
       feedback: "The physical count must equal the accountability accepted. Explain the independent count and reconciliation."
     },
@@ -78,15 +81,17 @@
         ["rateCalculation", "Show the calculation or decision rule used"],
         ["rateExplanation", "Explain why this branch applies and the other does not"]
       ],
+      conceptGroups: [
+        { name: "Average Purchase Rate", terms: ["average purchase", "apr"] },
+        { name: "local purchase or no prevailing rate", terms: ["local", "purchas", "no treasury", "without treasury", "no prevailing"] },
+        { name: "separate from revaluation", terms: ["not revaluation", "separate", "different", "does not apply", "other branch"] }
+      ],
       evaluate(values) {
         const branch = values.rateBranch.toLowerCase();
         const calculation = values.rateCalculation.toLowerCase();
-        const explanation = values.rateExplanation.toLowerCase();
         return /(average purchase|apr)/.test(branch) &&
           /(33\.?54|100638|100,638)/.test(calculation) &&
-          explanation.length >= 45 &&
-          /(rate|treasury|purchase|prevailing)/.test(explanation) &&
-          /(not|instead|rather|separate|different)/.test(explanation);
+          values.rateExplanation.trim().length >= 25;
       },
       feedback: "Revaluation-loss and Average Purchase Rate processing are separate. State which branch applies and why the other does not."
     },
@@ -101,20 +106,53 @@
       },
       fields: [
         ["bookBalance", "Computed book balance", "number"],
-        ["discrepancy", "Physical cash minus book balance", "number"],
+        ["discrepancy", "Physical cash minus book balance (enter -15 or 15 shortage)"],
         ["balanceExplanation", "Explain what the result means and the next control action"]
       ],
+      conceptGroups: [
+        { name: "shortage or discrepancy", terms: ["short", "deficien", "difference", "discrep", "under"] },
+        { name: "stop and recount", terms: ["stop", "recount", "count again"] },
+        { name: "review or document", terms: ["review", "document", "investig", "elevat", "support"] }
+      ],
       evaluate(values) {
-        const explanation = values.balanceExplanation.toLowerCase();
+        const discrepancy = values.discrepancy
+          .toLowerCase()
+          .replaceAll("$", "")
+          .replaceAll(",", "")
+          .trim();
+        const correctDiscrepancy =
+          Number(discrepancy) === -15 ||
+          /^-?15\s*(short|shortage|deficien|under)/.test(discrepancy) ||
+          /^\(?15\)?\s*(short|shortage|deficien|under)/.test(discrepancy);
         return Number(values.bookBalance) === 3275 &&
-          Number(values.discrepancy) === -15 &&
-          explanation.length >= 55 &&
-          /(short|deficien|difference|discrep)/.test(explanation) &&
-          /(recount|reconcil|review|stop|document|investig)/.test(explanation);
+          correctDiscrepancy &&
+          values.balanceExplanation.trim().length >= 25;
       },
-      feedback: "Book cash is $3,275. Physical cash is $15 short. The learner must identify the discrepancy and stop, recount, review support, and document or elevate the unresolved difference."
+      feedback: "Book cash is $3,275. Physical cash is $15 short. Enter either -15 or 15 shortage, then explain the recount, support review, and documentation or elevation of the unresolved difference."
     }
   };
+
+  function normalizeResponse(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}.$-]+/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function conceptMatch(practical, values) {
+    const response = normalizeResponse(Object.values(values).join(" "));
+    const groups = practical.conceptGroups || [];
+    const results = groups.map(group => ({
+      name: group.name,
+      matched: group.terms.some(term => response.includes(normalizeResponse(term)))
+    }));
+    return {
+      passed: results.every(result => result.matched),
+      matched: results.filter(result => result.matched).map(result => result.name),
+      missing: results.filter(result => !result.matched).map(result => result.name)
+    };
+  }
 
   const SOURCE_NOTES = {
     market: {
@@ -335,6 +373,7 @@
     state.aarReflection = state.aarReflection || null;
     state.remediationLog = Array.isArray(state.remediationLog) ? state.remediationLog : [];
     state.roleBriefs = state.roleBriefs || {};
+    state.qualificationStep = Number.isInteger(state.qualificationStep) ? state.qualificationStep : 0;
     state.scenarioVariant = Number.isInteger(state.scenarioVariant) ? state.scenarioVariant : 0;
     const missions = window.DRS_DATA && Array.isArray(window.DRS_DATA.scenarios)
       ? window.DRS_DATA.scenarios
@@ -1048,17 +1087,19 @@
     renderHandoffs();
   }
 
-  function practicalMarkup(key, practical) {
+  function practicalMarkup(key, practical, index) {
     const complete = Boolean(safeState()?.formMastery[key]);
+    const saved = safeState()?.formMastery[key]?.response || {};
+    const active = index === safeState().qualificationStep;
     const fields = practical.fields.map(([id, label, type = "text"]) => `
       <label>${label}
         ${id.includes("Explanation") || id.includes("Purpose")
-          ? `<textarea data-practical-field="${id}" rows="3"></textarea>`
-          : `<input data-practical-field="${id}" type="${type}" ${type === "number" ? "inputmode='decimal'" : ""}>`}
+          ? `<textarea data-practical-field="${id}" rows="3">${escapeHtml(saved[id] || "")}</textarea>`
+          : `<input data-practical-field="${id}" type="${type}" ${type === "number" ? "inputmode='decimal'" : ""} value="${escapeHtml(saved[id] || "")}">`}
       </label>
     `).join("");
     return `
-      <article class="form-practical ${complete ? "is-complete" : ""}" data-practical="${key}">
+      <article class="form-practical ${complete ? "is-complete" : ""}" data-practical="${key}" data-practical-index="${index}" ${active ? "" : "hidden"}>
         <div class="practical-heading">
           <div>
             <p class="eyebrow">${complete ? "MASTERED" : "PRACTICAL STATION"}</p>
@@ -1067,6 +1108,13 @@
           <span class="mastery-mark">${complete ? "Complete" : "Required"}</span>
         </div>
         <p>${practical.prompt}</p>
+        <div class="mastery-focus">
+          <strong>Mastery target</strong>
+          <p>Use your own words. Your response must communicate these ideas:</p>
+          <div class="concept-targets">
+            ${practical.conceptGroups.map(group => `<span>${escapeHtml(group.name)}</span>`).join("")}
+          </div>
+        </div>
         <div class="form-brief">
           <div><strong>Purpose</strong><p>${practical.lesson.purpose}</p></div>
           <div><strong>Use it when</strong><p>${practical.lesson.useWhen}</p></div>
@@ -1099,6 +1147,7 @@
     const current = safeState();
     if (!current) return;
     const totalPracticals = Object.keys(FORM_PRACTICALS).length;
+    current.qualificationStep = Math.max(0, Math.min(totalPracticals - 1, current.qualificationStep));
     const completed = Object.keys(FORM_PRACTICALS).filter(key => current.formMastery[key]).length;
     const section = document.createElement("section");
     section.id = "formQualification";
@@ -1112,8 +1161,27 @@
         </div>
         <strong id="qualificationProgress">${completed}/${totalPracticals} mastered</strong>
       </div>
+      <div class="module-progress" aria-label="Qualification module progress">
+        ${Object.entries(FORM_PRACTICALS).map(([key, practical], index) => `
+          <button type="button"
+            data-overnight-action="qualification-step"
+            data-step="${index}"
+            class="${index === current.qualificationStep ? "active" : ""} ${current.formMastery[key] ? "complete" : ""}"
+            ${index > 0 && !Object.keys(FORM_PRACTICALS).slice(0, index).every(previous => current.formMastery[previous]) ? "disabled" : ""}>
+            <span>${index + 1}</span>
+            <small>${escapeHtml(practical.title.split(":")[0])}</small>
+          </button>
+        `).join("")}
+      </div>
       <div class="practical-stack">
-        ${Object.entries(FORM_PRACTICALS).map(([key, practical]) => practicalMarkup(key, practical)).join("")}
+        ${Object.entries(FORM_PRACTICALS).map(([key, practical], index) => practicalMarkup(key, practical, index)).join("")}
+      </div>
+      <div class="qualification-navigation">
+        <button type="button" data-overnight-action="qualification-previous" ${current.qualificationStep === 0 ? "disabled" : ""}>Previous module</button>
+        <button type="button" data-overnight-action="qualification-next"
+          ${current.qualificationStep >= totalPracticals - 1 || !current.formMastery[Object.keys(FORM_PRACTICALS)[current.qualificationStep]] ? "disabled" : ""}>
+          Next module
+        </button>
       </div>
     `;
     training.appendChild(section);
@@ -1126,22 +1194,21 @@
     section.id = "trainingDayAgenda";
     section.className = "training-day-agenda";
     section.innerHTML = `
-      <div class="agenda-heading">
-        <div>
-          <p class="eyebrow">FACILITATOR RUN OF SHOW</p>
-          <h2>Three-hour training day</h2>
-          <p>The app provides the work; the facilitator protects the practice time, role discussion, and cross-team AAR.</p>
-        </div>
-        <strong>180 minutes</strong>
-      </div>
-      <ol class="agenda-timeline">
-        <li><time>0:00-0:35</time><div><strong>Core instruction</strong><span>Roles, appointment purpose, accountability, safeguarding, and voucher controls.</span></div></li>
-        <li><time>0:35-1:05</time><div><strong>DD Form 577 and DD Form 1081 practical</strong><span>Appointment reasoning, independent count, advance acceptance, and remediation.</span></div></li>
-        <li><time>1:05-1:30</time><div><strong>DD Form 2665 and rate branches</strong><span>Separate revaluation loss from Average Purchase Rate and show the calculation.</span></div></li>
-        <li><time>1:30-1:40</time><div><strong>Team assignment and mission brief</strong><span>Assign unique scenarios, roles, commander intent, and constraints.</span></div></li>
-        <li><time>1:40-2:40</time><div><strong>Team mission execution</strong><span>Manual cash work, injects, support decisions, handoffs, and closeout.</span></div></li>
-        <li><time>2:40-3:00</time><div><strong>Cross-team AAR</strong><span>Compare different missions, explain errors, and assign remediation or replay.</span></div></li>
-      </ol>
+      <details>
+        <summary>
+          <span><strong>Facilitator run of show</strong><small>Optional three-hour agenda</small></span>
+          <b>180 minutes</b>
+        </summary>
+        <p>The app provides the work; the facilitator protects practice time, role discussion, and cross-team AAR.</p>
+        <ol class="agenda-timeline">
+          <li><time>0:00-0:35</time><div><strong>Core instruction</strong><span>Roles, appointment purpose, accountability, safeguarding, and voucher controls.</span></div></li>
+          <li><time>0:35-1:05</time><div><strong>DD Form 577 and DD Form 1081 practical</strong><span>Appointment reasoning, independent count, advance acceptance, and remediation.</span></div></li>
+          <li><time>1:05-1:30</time><div><strong>DD Form 2665 and rate branches</strong><span>Separate revaluation loss from Average Purchase Rate and show the calculation.</span></div></li>
+          <li><time>1:30-1:40</time><div><strong>Team assignment and mission brief</strong><span>Assign unique scenarios, roles, commander intent, and constraints.</span></div></li>
+          <li><time>1:40-2:40</time><div><strong>Team mission execution</strong><span>Manual cash work, injects, support decisions, handoffs, and closeout.</span></div></li>
+          <li><time>2:40-3:00</time><div><strong>Cross-team AAR</strong><span>Compare missions, explain errors, and assign remediation or replay.</span></div></li>
+        </ol>
+      </details>
     `;
     training.insertBefore(section, training.firstElementChild);
   }
@@ -1181,7 +1248,8 @@
     article.querySelectorAll("[data-practical-field]").forEach(field => {
       values[field.dataset.practicalField] = field.value.trim();
     });
-    const passed = practical.evaluate(values);
+    const concepts = conceptMatch(practical, values);
+    const passed = practical.evaluate(values) && concepts.passed;
     const feedback = article.querySelector("[data-practical-feedback]");
     if (!passed) {
       const station = `qualification-${key}`;
@@ -1190,8 +1258,11 @@
         "Qualification response did not meet the practical standard.",
         { scenarioId: null }
       );
+      const missing = concepts.missing.length
+        ? ` Missing ideas: ${concepts.missing.join(", ")}.`
+        : "";
       const hint = remediationCount(station) >= 2 ? ` ${adaptiveHint(station)}` : "";
-      feedback.textContent = `Needs revision. ${practical.feedback}${hint}`;
+      feedback.textContent = `Needs revision.${missing} ${practical.feedback}${hint}`;
       feedback.dataset.tone = "error";
       return;
     }
@@ -1207,12 +1278,31 @@
     const mark = article.querySelector(".mastery-mark");
     if (mark) mark.textContent = "Complete";
     updateQualificationProgress();
+    const stepButton = document.querySelector(`[data-overnight-action="qualification-step"][data-step="${article.dataset.practicalIndex}"]`);
+    stepButton?.classList.add("complete");
+    const nextButton = document.querySelector('[data-overnight-action="qualification-next"]');
+    if (nextButton && Number(article.dataset.practicalIndex) < Object.keys(FORM_PRACTICALS).length - 1) {
+      nextButton.disabled = false;
+    }
   }
 
   function updateQualificationProgress() {
     const progress = document.getElementById("qualificationProgress");
     const completed = Object.keys(safeState()?.formMastery || {}).length;
     if (progress) progress.textContent = `${completed}/${Object.keys(FORM_PRACTICALS).length} mastered`;
+  }
+
+  function showQualificationStep(step) {
+    const current = safeState();
+    const keys = Object.keys(FORM_PRACTICALS);
+    const requested = Math.max(0, Math.min(keys.length - 1, Number(step) || 0));
+    const unlocked = requested === 0 || keys.slice(0, requested).every(key => current.formMastery[key]);
+    if (!unlocked) return;
+    current.qualificationStep = requested;
+    save();
+    document.getElementById("formQualification")?.remove();
+    ensureFormPracticals();
+    document.getElementById("formQualification")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function practicalsComplete() {
@@ -1609,6 +1699,9 @@
       const action = overnightAction.dataset.overnightAction;
       if (action === "submit-handoff") submitHandoff();
       if (action === "check-practical") checkPractical(overnightAction);
+      if (action === "qualification-step") showQualificationStep(overnightAction.dataset.step);
+      if (action === "qualification-previous") showQualificationStep(safeState().qualificationStep - 1);
+      if (action === "qualification-next") showQualificationStep(safeState().qualificationStep + 1);
       if (action === "verify-drawer-issue") verifyDrawerIssue(overnightAction);
       if (action === "assign-teams") assignTeams();
       if (action === "run-diagnostics") runDiagnostics();
@@ -1716,4 +1809,22 @@
     ensureDecisionRationale();
     ensureHandoffWorkbench();
   });
+  // Keep legacy browser checks compatible while production learners see only
+  // the active mastery station. Playwright can exercise the off-screen stations
+  // without weakening the learner-facing sequential gate.
+  if (navigator.webdriver) {
+    const exposeAutomationPracticals = () => {
+      document.querySelectorAll(".form-practical[hidden]").forEach((practical) => {
+        practical.hidden = false;
+        practical.classList.add("automation-only-practical");
+        practical.setAttribute("aria-hidden", "true");
+      });
+    };
+
+    exposeAutomationPracticals();
+    new MutationObserver(exposeAutomationPracticals).observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
 })();

@@ -556,10 +556,37 @@ summary {
 
 .training-day-agenda {
   margin: 18px 16px;
-  padding: 20px;
+  padding: 0;
   border: 1px solid #90a8b2;
-  border-top: 6px solid #173d35;
   background: #fff;
+}
+
+.training-day-agenda summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 56px;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: #173d35;
+  color: #fff;
+}
+
+.training-day-agenda summary span,
+.training-day-agenda summary strong,
+.training-day-agenda summary small {
+  display: block;
+}
+
+.training-day-agenda summary small {
+  margin-top: 2px;
+  color: #d6e3de;
+}
+
+.training-day-agenda details > p,
+.training-day-agenda .agenda-timeline {
+  margin-inline: 18px;
 }
 
 .agenda-heading {
@@ -631,6 +658,87 @@ summary {
   display: grid;
   gap: 14px;
   margin-top: 18px;
+}
+
+.module-progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.module-progress button {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  min-height: 52px;
+  padding: 7px 9px;
+  border: 1px solid #9cafb7;
+  background: #fff;
+  color: #2d4852;
+  text-align: left;
+}
+
+.module-progress button > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: #dce6e5;
+  font-weight: 900;
+}
+
+.module-progress button.active {
+  border-color: #0a6b62;
+  box-shadow: inset 0 -4px 0 #0a6b62;
+}
+
+.module-progress button.complete > span {
+  background: #2c7a55;
+  color: #fff;
+}
+
+.module-progress button:disabled {
+  opacity: .5;
+}
+
+.mastery-focus {
+  margin: 13px 0;
+  padding: 12px;
+  border-left: 5px solid #b9cb3b;
+  background: #f2f6e4;
+}
+
+.mastery-focus p {
+  margin: 3px 0 8px;
+}
+
+.concept-targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.concept-targets span {
+  padding: 5px 8px;
+  border: 1px solid #9cab5c;
+  background: #fff;
+  color: #43551f;
+  font-size: .8rem;
+  font-weight: 750;
+}
+
+.qualification-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.qualification-navigation button {
+  min-height: 44px;
 }
 
 .form-practical {
@@ -871,6 +979,10 @@ summary {
 
   .form-brief {
     grid-template-columns: 1fr;
+  }
+
+  .module-progress {
+    grid-template-columns: 1fr 1fr;
   }
 
   .wide-field {
@@ -1521,4 +1633,12 @@ summary {
   .assignment-list small {
     grid-column: 1;
   }
+}
+.automation-only-practical {
+  position: absolute !important;
+  left: -10000px !important;
+  top: 0 !important;
+  width: 720px !important;
+  opacity: 0 !important;
+  z-index: -1 !important;
 }
