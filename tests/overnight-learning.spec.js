@@ -15,6 +15,7 @@ async function openTraining(page) {
   await expect(page.locator("#formQualification")).toBeVisible();
   await expect(page.locator(".form-practical")).toHaveCount(4);
   await expect(page.locator(".form-brief")).toHaveCount(4);
+  await expect(page.locator(".form-practical:visible")).toHaveCount(1);
 }
 
 async function completeFormPracticals(page) {
@@ -26,8 +27,10 @@ async function completeFormPracticals(page) {
   );
   await dd577.locator('[data-practical-key="dd577"]').click();
   await expect(dd577).toHaveClass(/is-complete/);
+  await page.locator('[data-overnight-action="qualification-next"]').click();
 
   const dd1081 = page.locator('[data-practical="dd1081"]');
+  await expect(dd1081).toBeVisible();
   await dd1081.locator('[data-practical-field="advanceAmount"]').fill("4000");
   await dd1081.locator('[data-practical-field="physicalCount"]').fill("4000");
   await dd1081.locator('[data-practical-field="advanceExplanation"]').fill(
@@ -35,8 +38,10 @@ async function completeFormPracticals(page) {
   );
   await dd1081.locator('[data-practical-key="dd1081"]').click();
   await expect(dd1081).toHaveClass(/is-complete/);
+  await page.locator('[data-overnight-action="qualification-next"]').click();
 
   const dd2665 = page.locator('[data-practical="dd2665"]');
+  await expect(dd2665).toBeVisible();
   await dd2665.locator('[data-practical-field="rateBranch"]').fill("Average Purchase Rate");
   await dd2665.locator('[data-practical-field="rateCalculation"]').fill("100638 / 3000 = 33.546");
   await dd2665.locator('[data-practical-field="rateExplanation"]').fill(
@@ -44,10 +49,12 @@ async function completeFormPracticals(page) {
   );
   await dd2665.locator('[data-practical-key="dd2665"]').click();
   await expect(dd2665).toHaveClass(/is-complete/);
+  await page.locator('[data-overnight-action="qualification-next"]').click();
 
   const balance = page.locator('[data-practical="balance"]');
+  await expect(balance).toBeVisible();
   await balance.locator('[data-practical-field="bookBalance"]').fill("3275");
-  await balance.locator('[data-practical-field="discrepancy"]').fill("-15");
+  await balance.locator('[data-practical-field="discrepancy"]').fill("15 shortage");
   await balance.locator('[data-practical-field="balanceExplanation"]').fill(
     "The physical cash is $15 short of the book balance, so I will stop, recount, review the support, and document the unresolved discrepancy."
   );
