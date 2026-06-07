@@ -173,8 +173,12 @@ for (const session of expandedProfiles()) {
 
 test("workflow cannot be bypassed", async ({ page }) => {
   await enterApp(page);
-  await page.locator('.bottom-nav [data-nav="mission"]').click();
+  const missionNav = page.locator('.bottom-nav [data-nav="mission"]');
+  await expect(missionNav).toHaveAttribute("aria-disabled", "true");
+  await missionNav.evaluate((button) => button.click());
   await expect(page.locator("#training")).toHaveClass(/active/);
-  await page.locator('.bottom-nav [data-nav="closeout"]').click();
+  const closeoutNav = page.locator('.bottom-nav [data-nav="closeout"]');
+  await expect(closeoutNav).toHaveAttribute("aria-disabled", "true");
+  await closeoutNav.evaluate((button) => button.click());
   await expect(page.locator("#training")).toHaveClass(/active/);
 });
