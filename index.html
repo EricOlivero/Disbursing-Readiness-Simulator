@@ -49,6 +49,16 @@
       </div>
 
       <div class="card">
+        <p class="eyebrow">Scenario library</p>
+        <h2>Choose a team mission</h2>
+        <label>Mission
+          <select id="scenarioSelect"></select>
+        </label>
+        <button type="button" data-action="load-selected-scenario">Load Selected Mission</button>
+        <p class="hint">Seven missions target different competencies. Teams should receive different missions and seeded values.</p>
+      </div>
+
+      <div class="card">
         <p class="eyebrow">Local profile</p>
         <label>Name or callsign
           <input id="profileInput" type="text" placeholder="A1C Example">
@@ -141,6 +151,44 @@
       </div>
 
       <div class="card">
+        <p class="eyebrow">Required role handoff</p>
+        <h2>Explain and accept accountability</h2>
+        <div class="handoff-grid">
+          <label>From role
+            <select id="handoffFrom">
+              <option value="">Select role</option>
+              <option>Commander</option>
+              <option>Budget Officer</option>
+              <option>DDO</option>
+              <option>Disbursing Agent</option>
+              <option>Cashier</option>
+              <option>Paying Agent</option>
+            </select>
+          </label>
+          <label>To role
+            <select id="handoffTo">
+              <option value="">Select role</option>
+              <option>Commander</option>
+              <option>Budget Officer</option>
+              <option>DDO</option>
+              <option>Disbursing Agent</option>
+              <option>Cashier</option>
+              <option>Paying Agent</option>
+            </select>
+          </label>
+        </div>
+        <label>Accountability handoff explanation
+          <textarea id="handoffExplanation" rows="4" placeholder="State the amount or documents transferred, authority, count/reconciliation, support, unresolved issues, and what the receiver accepts."></textarea>
+        </label>
+        <label class="check-row">
+          <input id="handoffAccepted" type="checkbox">
+          <span>Receiving role verified the count/support and accepts the handoff.</span>
+        </label>
+        <button type="button" data-action="submit-handoff">Record Handoff</button>
+        <ul id="handoffHistory" class="ledger"></ul>
+      </div>
+
+      <div class="card">
         <p class="eyebrow">Timeline</p>
         <div id="timeline" class="timeline"></div>
       </div>
@@ -157,6 +205,9 @@
           </select>
         </label>
         <h3 id="eventQuestion">What do you do?</h3>
+        <label id="decisionRationaleLabel">Explain the accountability basis for your decision
+          <textarea id="decisionRationale" rows="4" placeholder="State the rule or mission condition, calculation or support reviewed, accountability effect, and required documentation."></textarea>
+        </label>
         <div id="paymentWorkbench" class="payment-workbench"></div>
         <div id="eventChoices" class="choice-stack"></div>
       </article>
@@ -234,7 +285,9 @@
   </nav>
 
   <script src="./data.js"></script>
-  <script src="./app.js"></script>
+  <script src="./scenarios.js"></script>
+<script src="./app.js"></script>
+<script src="./overnight-enhancements.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));

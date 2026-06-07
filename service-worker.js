@@ -1,10 +1,12 @@
-const CACHE_NAME = "drs-polished-v20260531-7";
+const CACHE_NAME = "drs-polished-v20260605-1";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./data.js",
+  "./scenarios.js",
   "./app.js",
+  "./overnight-enhancements.js",
   "./manifest.json"
 ];
 

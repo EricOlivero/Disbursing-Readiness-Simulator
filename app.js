@@ -1,5 +1,5 @@
 const DATA = window.DRS_DATA || {};
-const APP_VERSION = "constructed-response-v2";
+const APP_VERSION = "accountability-integrity-v1";
 const $ = (id) => document.getElementById(id);
 const money = (n) => Number(n || 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
 const whole = (n) => Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -19,7 +19,10 @@ const baseState = {
   flags: [],
   paymentAttempts: {},
   paymentFindings: {},
+  trainingFindings: {},
   closeoutFindings: [],
+  completedEvents: {},
+  drawerCounts: { usd: {}, zd: {} },
   closeoutChecked: false,
   briefed: false,
   completedLessons: {},
@@ -52,7 +55,12 @@ state.flags = state.flags || [];
 state.errors = state.errors || [];
 state.paymentAttempts = state.paymentAttempts || {};
 state.paymentFindings = state.paymentFindings || {};
+state.trainingFindings = state.trainingFindings || {};
 state.closeoutFindings = state.closeoutFindings || [];
+state.completedEvents = state.completedEvents || {};
+state.drawerCounts = state.drawerCounts || { usd: {}, zd: {} };
+state.drawerCounts.usd = state.drawerCounts.usd || {};
+state.drawerCounts.zd = state.drawerCounts.zd || {};
 
 if (state.appVersion !== APP_VERSION) {
   state.lesson = 0;
@@ -115,6 +123,11 @@ function show(id) {
     state.trainingGateMessage = "Mission locked. Complete all Training Bay blocks first so the team understands DD 1081, DD 2665, rates, closeout, and OPORD execution.";
     id = "training";
   }
+  const missionComplete = Object.keys(state.completedEvents || {}).filter((key) => state.completedEvents[key]).length >= events().length;
+  const injectComplete = Object.values(state.injectChecks || {}).filter(Boolean).length >= 4;
+  if (id === "inject" && !missionComplete) id = "mission";
+  if (id === "closeout" && (!missionComplete || !injectComplete)) id = missionComplete ? "inject" : "mission";
+  if (id === "aar" && !state.closeoutChecked) id = "closeout";
 
   document.querySelectorAll(".screen").forEach((screen) => {
     screen.classList.toggle("active", screen.id === id);
@@ -123,7 +136,13 @@ function show(id) {
   document.querySelectorAll("[data-nav]").forEach((btn) => {
     const target = btn.getAttribute("data-nav");
     btn.classList.toggle("active", target === id);
-    const locked = ["mission", "inject", "closeout", "aar"].includes(target) && !state.trainingComplete;
+    const missionDone = Object.keys(state.completedEvents || {}).filter((key) => state.completedEvents[key]).length >= events().length;
+    const injectDone = Object.values(state.injectChecks || {}).filter(Boolean).length >= 4;
+    const locked =
+      (target === "mission" && !state.trainingComplete) ||
+      (target === "inject" && (!state.trainingComplete || !missionDone)) ||
+      (target === "closeout" && (!missionDone || !injectDone)) ||
+      (target === "aar" && !state.closeoutChecked);
     btn.classList.toggle("locked", locked);
     if (locked) btn.setAttribute("aria-disabled", "true");
     else btn.removeAttribute("aria-disabled");
@@ -336,12 +355,13 @@ function completeLesson(choiceIndex) {
   const feedback = $("lessonFeedback");
 
   if (!correct) {
-    state.errors.push(`${active.title || "Training"}: ${choice.feedback || "Incorrect training decision."}`);
+    state.trainingFindings[active.id] = choice.feedback || "Incorrect training decision.";
     if (feedback) feedback.textContent = choice.feedback || "Slow down. The right answer should protect accountability and explain the form purpose.";
     save();
     return;
   }
 
+  delete state.trainingFindings[active.id];
   state.completedLessons[active.id] = true;
   recomputeTrainingComplete();
   if (feedback) feedback.textContent = choice.feedback || "Correct. That is the standard you need before mission execution.";
@@ -369,7 +389,10 @@ function loadScenario(id, resetMission = false) {
     state.flags = [];
     state.paymentAttempts = {};
     state.paymentFindings = {};
+    state.trainingFindings = {};
     state.closeoutFindings = [];
+    state.completedEvents = {};
+    state.drawerCounts = { usd: {}, zd: {} };
     state.closeoutChecked = false;
     state.briefed = false;
     state.teamChecks = {};
@@ -409,7 +432,12 @@ function renderTimeline() {
   const timeline = $("timeline");
   if (!timeline) return;
   timeline.innerHTML = events().map((item, index) => `
-    <button class="${index === state.eventIndex ? "active" : ""}" type="button" data-event-jump="${index}">
+    <button
+      class="${index === state.eventIndex ? "active" : ""} ${state.completedEvents[index] ? "done" : ""}"
+      type="button"
+      data-event-jump="${index}"
+      ${index > state.eventIndex || state.completedEvents[index] ? "disabled" : ""}
+    >
       <span>${index + 1}</span>${escapeHtml(item.title || item.type || "Event")}
     </button>
   `).join("");
@@ -420,6 +448,12 @@ function renderEvent(event) {
   setText("eventType", event.type || "Disbursing decision");
   setText("eventNarrative", event.narrative || event.description || "Review the prompt and select the action that protects accountability.");
   setText("eventQuestion", event.question || "What do you do?");
+  if (state.completedEvents[state.eventIndex]) {
+    setText("eventQuestion", "Mission timeline complete. Continue to the inject and closeout workbench.");
+    setHtml("paymentWorkbench", "");
+    setHtml("eventChoices", `<p class="feedback">This event is complete and cannot be submitted again.</p>`);
+    return;
+  }
   renderPaymentWorkbench(event);
 
   const choices = $("eventChoices");
@@ -490,6 +524,7 @@ function renderPaymentWorkbench(event) {
 
 function submitTypedPayment() {
   const event = events()[state.eventIndex] || {};
+  if (state.completedEvents[state.eventIndex]) return;
   const expected = event.expectedPayment;
   if (!expected) return;
 
@@ -527,6 +562,7 @@ function submitTypedPayment() {
     result: "Supported typed payment",
     confidence: $("confidence")?.value || "medium"
   });
+  state.completedEvents[state.eventIndex] = true;
   state.eventIndex = Math.min(state.eventIndex + 1, Math.max(events().length - 1, 0));
   save();
   renderMission();
@@ -534,6 +570,7 @@ function submitTypedPayment() {
 
 function chooseEvent(index) {
   const event = events()[state.eventIndex] || {};
+  if (state.completedEvents[state.eventIndex]) return;
   const choice = (event.choices || [])[index] || {};
   const confidence = $("confidence")?.value || "medium";
   const correct = !!choice.correct;
@@ -555,6 +592,7 @@ function chooseEvent(index) {
     confidence
   });
 
+  state.completedEvents[state.eventIndex] = true;
   state.eventIndex = Math.min(state.eventIndex + 1, Math.max(events().length - 1, 0));
   save();
   renderMission();
@@ -648,7 +686,7 @@ function renderDrawers() {
       <h3>USD Drawer</h3>
       ${usdDenoms.map((value) => `
         <label>$${value}
-          <input type="number" min="0" data-usd-denom="${value}" placeholder="0">
+          <input type="number" min="0" data-usd-denom="${value}" value="${Number(state.drawerCounts.usd[value] || 0)}" placeholder="0">
         </label>
       `).join("")}
     </div>
@@ -656,7 +694,7 @@ function renderDrawers() {
       <h3>ZD Drawer</h3>
       ${zdDenoms.map((value) => `
         <label>${whole(value)} ZD
-          <input type="number" min="0" data-zd-denom="${value}" placeholder="0">
+          <input type="number" min="0" data-zd-denom="${value}" value="${Number(state.drawerCounts.zd[value] || 0)}" placeholder="0">
         </label>
       `).join("")}
     </div>
@@ -668,8 +706,8 @@ function checkCloseout() {
   const expectedBack = Number($("closeoutExpectedInput")?.value || 0);
   const explanation = $("closeoutExplanation")?.value || "";
   const expectedSupported = Number(state.supportedUsd || 0);
-  const expectedCashBack = Number((scenario().startingUsd || 4000) - expectedSupported);
-  const countedUsdEquivalent = physicalUsd() + (physicalZd() / 60);
+  const expectedCashBack = Number((scenario().accountabilityUsd || 4000) - expectedSupported);
+  const countedUsdEquivalent = physicalUsd() + (physicalZd() / Number(scenario().directedRate || 60));
   const supportOk = Math.abs(supported - expectedSupported) < 0.05;
   const expectedOk = Math.abs(expectedBack - expectedCashBack) < 0.05;
   const countOk = Math.abs(countedUsdEquivalent - expectedCashBack) < 2;
@@ -696,12 +734,13 @@ function checkCloseout() {
 function submitAar() {
   const findings = [
     ...state.errors,
+    ...Object.entries(state.trainingFindings || {}).map(([lessonId, finding]) => `Training ${lessonId}: ${finding}`),
     ...Object.values(state.paymentFindings || {}),
     ...(state.closeoutFindings || []).map((finding) => `Closeout workbench: ${finding}`)
   ];
   const roleChecks = Object.values(state.teamChecks || {}).filter(Boolean).length;
   const injectChecks = Object.values(state.injectChecks || {}).filter(Boolean).length;
-  const decisionCount = state.ledger.length;
+  const decisionCount = Object.values(state.completedEvents || {}).filter(Boolean).length;
 
   if (!state.trainingComplete) findings.push("Training Bay was not completed before mission execution.");
   if (!state.briefed) findings.push("Team did not mark OPORD brief complete before execution.");
@@ -858,8 +897,15 @@ document.addEventListener("input", (event) => {
     renderHome();
   }
   if (event.target.matches("[data-usd-denom], [data-zd-denom]")) {
+    if (event.target.dataset.usdDenom) {
+      state.drawerCounts.usd[event.target.dataset.usdDenom] = Number(event.target.value || 0);
+    }
+    if (event.target.dataset.zdDenom) {
+      state.drawerCounts.zd[event.target.dataset.zdDenom] = Number(event.target.value || 0);
+    }
     setText("physicalUsd", money(physicalUsd()));
     setText("physicalZd", `${whole(physicalZd())} ZD`);
+    save();
   }
 });
 
