@@ -57,7 +57,7 @@ async function enterApp(page) {
 }
 
 async function completeTraining(page, profile) {
-  await page.locator('[data-nav="training"]').click();
+  await page.locator('.bottom-nav [data-nav="training"]').click();
   await expect(page.locator("#lessonTitle")).toBeVisible();
 
   for (let index = 0; index < trainingAnswers.length; index += 1) {
@@ -93,7 +93,7 @@ async function submitPayment(page, { zd, rate, usd }) {
 }
 
 async function runMission(page, profile) {
-  await page.locator('[data-nav="home"]').click();
+  await page.locator('.bottom-nav [data-nav="home"]').click();
   await page.locator('[data-action="start-demo"]').click();
   await expect(page.locator("#mission")).toHaveClass(/active/);
   await page.locator('[data-action="mark-briefed"]').click();
@@ -115,7 +115,7 @@ async function runMission(page, profile) {
 }
 
 async function completeInject(page) {
-  await page.locator('[data-nav="inject"]').click();
+  await page.locator('.bottom-nav [data-nav="inject"]').click();
   await expect(page.locator("#inject")).toHaveClass(/active/);
   const checks = page.locator("[data-inject-check]");
   for (let index = 0; index < await checks.count(); index += 1) {
@@ -124,7 +124,7 @@ async function completeInject(page) {
 }
 
 async function completeCloseout(page) {
-  await page.locator('[data-nav="closeout"]').click();
+  await page.locator('.bottom-nav [data-nav="closeout"]').click();
   await expect(page.locator("#closeout")).toHaveClass(/active/);
 
   const counts = {
@@ -173,8 +173,8 @@ for (const session of expandedProfiles()) {
 
 test("workflow cannot be bypassed", async ({ page }) => {
   await enterApp(page);
-  await page.locator('[data-nav="mission"]').click();
+  await page.locator('.bottom-nav [data-nav="mission"]').click();
   await expect(page.locator("#training")).toHaveClass(/active/);
-  await page.locator('[data-nav="closeout"]').click();
+  await page.locator('.bottom-nav [data-nav="closeout"]').click();
   await expect(page.locator("#training")).toHaveClass(/active/);
 });
