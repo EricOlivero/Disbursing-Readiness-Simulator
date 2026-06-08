@@ -1813,6 +1813,25 @@
   // the active mastery station. Playwright can exercise the off-screen stations
   // without weakening the learner-facing sequential gate.
   if (navigator.webdriver) {
+    // Release tests need a stable navigation entry point. Route them through
+    // the same visible navigation controls a learner uses instead of reaching
+    // into app.js private scope.
+    window.showView = (view) => {
+      const candidates = Array.from(
+        document.querySelectorAll(`[data-nav="${view}"]`)
+      );
+      const control =
+        candidates.find(
+          (candidate) =>
+            !candidate.disabled &&
+            candidate.getAttribute("aria-disabled") !== "true"
+        ) || candidates[0];
+
+      if (control) {
+        control.click();
+      }
+    };
+
     const exposeAutomationPracticals = () => {
       document.querySelectorAll(".form-practical[hidden]").forEach((practical) => {
         practical.hidden = false;
