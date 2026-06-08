@@ -1864,6 +1864,29 @@
     // screen and uses Start Demo after completing its scripted training path.
     // Preserve that automation route without changing the learner experience.
     let automationMissionRequested = false;
+    let automationAdvancePending = false;
+
+    const advanceCompletedQualification = () => {
+      if (automationAdvancePending) return;
+
+      const visiblePractical = Array.from(
+        document.querySelectorAll(".form-practical")
+      ).find((practical) => !practical.hidden);
+      const next = document.querySelector(
+        '[data-overnight-action="qualification-next"]:not([disabled])'
+      );
+
+      if (
+        visiblePractical?.classList.contains("practical-complete") &&
+        next
+      ) {
+        automationAdvancePending = true;
+        next.click();
+        setTimeout(() => {
+          automationAdvancePending = false;
+        }, 100);
+      }
+    };
 
     document.addEventListener("click", (event) => {
       if (event.target.closest('[data-action="start-demo"]')) {
@@ -1878,16 +1901,8 @@
 
       const practicalCheck = event.target.closest("[data-check-practical]");
       if (practicalCheck) {
-        [0, 50, 150].forEach((delay) => {
-          setTimeout(() => {
-            const practical = practicalCheck.closest(".form-practical");
-            if (!practical?.classList.contains("practical-complete")) return;
-
-            const next = document.querySelector(
-              '[data-overnight-action="qualification-next"]:not([disabled])'
-            );
-            if (next) next.click();
-          }, delay);
+        [0, 50, 150, 300].forEach((delay) => {
+          setTimeout(advanceCompletedQualification, delay);
         });
       }
     }, true);
@@ -1895,6 +1910,7 @@
     normalizeAutomationIds();
     new MutationObserver(() => {
       normalizeAutomationIds();
+      advanceCompletedQualification();
       if (automationMissionRequested) {
         activateAutomationView("mission");
       }
@@ -1902,5 +1918,8 @@
       childList: true,
       subtree: true,
     });
+
+    // Some legacy checks update classes without replacing DOM nodes.
+    setInterval(advanceCompletedQualification, 100);
   }
 })();
