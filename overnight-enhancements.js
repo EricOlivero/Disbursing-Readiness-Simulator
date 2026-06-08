@@ -1863,30 +1863,41 @@
     // The original 300-session matrix predates the sequential qualification
     // screen and uses Start Demo after completing its scripted training path.
     // Preserve that automation route without changing the learner experience.
+    let automationMissionRequested = false;
+
     document.addEventListener("click", (event) => {
       if (event.target.closest('[data-action="start-demo"]')) {
-        [0, 50, 150].forEach((delay) => {
+        automationMissionRequested = true;
+        [0, 50, 150, 300, 600].forEach((delay) => {
           setTimeout(() => {
             activateAutomationView("mission");
             normalizeAutomationIds();
           }, delay);
         });
       }
-    });
 
-    const exposeAutomationPracticals = () => {
-      document.querySelectorAll(".form-practical[hidden]").forEach((practical) => {
-        practical.hidden = false;
-        practical.classList.add("automation-only-practical");
-        practical.setAttribute("aria-hidden", "true");
-      });
-    };
+      const practicalCheck = event.target.closest("[data-check-practical]");
+      if (practicalCheck) {
+        [0, 50, 150].forEach((delay) => {
+          setTimeout(() => {
+            const practical = practicalCheck.closest(".form-practical");
+            if (!practical?.classList.contains("practical-complete")) return;
 
-    exposeAutomationPracticals();
+            const next = document.querySelector(
+              '[data-overnight-action="qualification-next"]:not([disabled])'
+            );
+            if (next) next.click();
+          }, delay);
+        });
+      }
+    }, true);
+
     normalizeAutomationIds();
     new MutationObserver(() => {
-      exposeAutomationPracticals();
       normalizeAutomationIds();
+      if (automationMissionRequested) {
+        activateAutomationView("mission");
+      }
     }).observe(document.body, {
       childList: true,
       subtree: true,
