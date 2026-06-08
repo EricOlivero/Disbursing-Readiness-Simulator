@@ -3,22 +3,23 @@ name: DRS 300 Browser Simulations
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     paths:
-      - "app.js"
-      - "data.js"
-      - "index.html"
-      - "styles.css"
-      - "service-worker.js"
+      - "*.html"
+      - "*.css"
+      - "*.js"
       - "tests/**"
-      - "playwright.config.js"
+      - "playwright.lean.config.cjs"
       - "package.json"
+      - "package-lock.json"
       - ".github/workflows/simulator-300.yml"
 
 jobs:
-  test:
+  focused-regression:
+    name: Focused learning regression
     runs-on: ubuntu-latest
-    timeout-minutes: 120
-
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -26,31 +27,62 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: 20
+          cache: npm
 
       - name: Install test dependencies
-        run: npm install
+        run: npm ci
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Start simulator
-        run: |
-          npm run serve > simulator-server.log 2>&1 &
-          npx wait-on http://127.0.0.1:4173
+        run: npx http-server . -p 4173 -c-1 > /tmp/drs-server.log 2>&1 &
 
-      - name: Run 300 browser simulations
-        env:
-          DRS_URL: http://127.0.0.1:4173
-        run: npm run test:300
+      - name: Run focused learning checks
+        run: npx playwright test tests/overnight-learning.spec.js --config=playwright.lean.config.cjs
 
-      - name: Upload HTML report, traces, screenshots, and videos
-        if: always()
+      - name: Upload small failure screenshot
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: drs-300-browser-report
-          path: |
-            playwright-report/
-            test-results/
-            simulator-server.log
-          retention-days: 30
+          name: focused-failure-screenshot
+          path: test-results/**/*.png
+          if-no-files-found: ignore
+          retention-days: 3
+
+  simulation-matrix:
+    name: 300-session matrix
+    needs: focused-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install test dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start simulator
+        run: npx http-server . -p 4173 -c-1 > /tmp/drs-server.log 2>&1 &
+
+      - name: Run 300 browser simulations
+        run: npx playwright test tests/simulator-300.spec.js --config=playwright.lean.config.cjs
+
+      - name: Upload small failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-failure-screenshot
+          path: test-results/**/*.png
+          if-no-files-found: ignore
+          retention-days: 3
