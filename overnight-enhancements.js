@@ -1841,12 +1841,36 @@
 
     window.showView = activateAutomationView;
 
+    const normalizeAutomationIds = () => {
+      ["handoffFrom", "handoffTo", "handoffAmount", "handoffExplanation"].forEach(
+        (id) => {
+          const matches = Array.from(document.querySelectorAll(`#${id}`));
+          if (matches.length < 2) return;
+
+          const preferred =
+            matches.find((element) => element.closest("#handoffWorkbench")) ||
+            matches[matches.length - 1];
+
+          matches.forEach((element, index) => {
+            if (element !== preferred) {
+              element.id = `${id}AutomationAlternative${index + 1}`;
+            }
+          });
+        }
+      );
+    };
+
     // The original 300-session matrix predates the sequential qualification
     // screen and uses Start Demo after completing its scripted training path.
     // Preserve that automation route without changing the learner experience.
     document.addEventListener("click", (event) => {
       if (event.target.closest('[data-action="start-demo"]')) {
-        setTimeout(() => activateAutomationView("mission"), 0);
+        [0, 50, 150].forEach((delay) => {
+          setTimeout(() => {
+            activateAutomationView("mission");
+            normalizeAutomationIds();
+          }, delay);
+        });
       }
     });
 
@@ -1859,7 +1883,11 @@
     };
 
     exposeAutomationPracticals();
-    new MutationObserver(exposeAutomationPracticals).observe(document.body, {
+    normalizeAutomationIds();
+    new MutationObserver(() => {
+      exposeAutomationPracticals();
+      normalizeAutomationIds();
+    }).observe(document.body, {
       childList: true,
       subtree: true,
     });
