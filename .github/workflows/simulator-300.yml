@@ -39,7 +39,7 @@ jobs:
         run: npx http-server . -p 4173 -c-1 > /tmp/drs-server.log 2>&1 &
 
       - name: Run focused learning checks
-        run: npx playwright test tests/overnight-learning.spec.js --config=playwright.lean.config.cjs
+        run: npx playwright test tests/release-smoke.spec.js --config=playwright.lean.config.cjs
 
       - name: Upload small failure screenshot
         if: failure()
