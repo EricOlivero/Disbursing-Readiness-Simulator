@@ -30,7 +30,7 @@ jobs:
           node-version: 20
 
       - name: Install test dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
@@ -65,7 +65,7 @@ jobs:
           node-version: 20
 
       - name: Install test dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
