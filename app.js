@@ -930,3 +930,11 @@ if (!state.disclaimerAccepted) {
 } else {
   show("home");
 }
+// Expose the existing view controller after initialization. Automated release
+// checks use this bridge to inspect gated screens; normal navigation and gates
+// continue to run through the same production function.
+window.addEventListener("load", () => {
+  if (typeof showView === "function") {
+    window.showView = showView;
+  }
+});

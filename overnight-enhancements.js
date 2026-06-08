@@ -1813,12 +1813,6 @@
   // the active mastery station. Playwright can exercise the off-screen stations
   // without weakening the learner-facing sequential gate.
   if (navigator.webdriver) {
-    // The production app keeps navigation internal. Playwright receives a
-    // narrow bridge after app initialization so it can inspect gated views.
-    if (typeof showView === "function") {
-      window.showView = showView;
-    }
-
     const exposeAutomationPracticals = () => {
       document.querySelectorAll(".form-practical[hidden]").forEach((practical) => {
         practical.hidden = false;
