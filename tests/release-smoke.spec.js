@@ -31,6 +31,24 @@ test("Training Bay presents one mastery module at a time", async ({ page }) => {
   await expect(page.locator("#unifiedTrainingPath")).toBeVisible();
   await expect(page.locator(".unified-module")).toHaveCount(1);
   await expect(page.locator(".unified-readiness strong")).toHaveText(/0\/9|[1-9]\/9/);
+  await expect(page.locator(".unified-module-track button")).toHaveCount(9);
+  await expect(page.locator(".unified-module-track button small")).toHaveCount(0);
+  await expect(page.locator(".unified-why")).toContainText(
+    "mission should not begin with cash changing hands"
+  );
+  await expect(page.locator(".unified-example")).toContainText(
+    "cashier reports for duty"
+  );
+  await expect(page.locator(".unified-form-map")).toContainText(
+    "Appointing authority"
+  );
+  await expect(page.locator(".unified-form-map")).toContainText(
+    "Appointed duty"
+  );
+  await expect(page.locator(".unified-learn")).toContainText(
+    "Disbursing Officer"
+  );
+  await expect(page.locator(".unified-learn")).toContainText("Cashier");
   await expect(
     page.locator('#unifiedPracticalMount [data-practical="dd577"]:visible')
   ).toHaveCount(1);
@@ -39,12 +57,39 @@ test("Training Bay presents one mastery module at a time", async ({ page }) => {
   ).toBeDisabled();
 });
 
+test("mobile progress rail stays compact and lesson content remains readable", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await enterApp(page);
+  await page.locator('[data-nav="training"]').first().click();
+
+  const rail = page.locator(".unified-module-track");
+  await expect(rail).toBeVisible();
+  await expect(page.locator(".unified-track-caption")).toContainText(
+    "Roles, Authority, and DD Form 577"
+  );
+
+  const circles = await rail.locator("button").evaluateAll((buttons) =>
+    buttons.map((button) => {
+      const box = button.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    })
+  );
+
+  expect(circles).toHaveLength(9);
+  for (const circle of circles) {
+    expect(circle.width).toBeLessThanOrEqual(48);
+    expect(circle.height).toBeLessThanOrEqual(48);
+  }
+});
+
 test("balance discrepancy field accepts a negative value", async ({ page }) => {
   await enterApp(page);
 
   await page.evaluate(() => {
     localStorage.setItem(
-      "drsUnifiedTrainingV1",
+      "drsUnifiedTrainingV2",
       JSON.stringify({
         current: 5,
         completed: [

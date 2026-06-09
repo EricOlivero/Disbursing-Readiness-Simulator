@@ -68,7 +68,7 @@ async function seedUnifiedProgress(page, profile) {
   await page.evaluate(
     ({ moduleIds, completed, current }) => {
       localStorage.setItem(
-        "drsUnifiedTrainingV1",
+        "drsUnifiedTrainingV2",
         JSON.stringify({
           current,
           completed: moduleIds.slice(0, completed),
