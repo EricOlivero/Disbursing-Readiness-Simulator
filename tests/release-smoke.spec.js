@@ -25,7 +25,7 @@ test("app loads without JavaScript errors", async ({ page }) => {
 
 test("Training Bay presents one mastery module at a time", async ({ page }) => {
   await enterApp(page);
-  await page.locator('[data-nav="training"]').first().click();
+  await page.locator('[data-nav="training"]:visible').first().click();
 
   await expect(page.locator("#training")).toHaveClass(/active/);
   await expect(page.locator("#unifiedTrainingPath")).toBeVisible();
@@ -62,7 +62,7 @@ test("mobile progress rail stays compact and lesson content remains readable", a
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await enterApp(page);
-  await page.locator('[data-nav="training"]').first().click();
+  await page.locator('[data-nav="training"]:visible').first().click();
 
   const rail = page.locator(".unified-module-track");
   await expect(rail).toBeVisible();
@@ -104,7 +104,7 @@ test("balance discrepancy field accepts a negative value", async ({ page }) => {
     );
   });
   await page.reload();
-  await page.locator('[data-nav="training"]').first().click();
+  await page.locator('[data-nav="training"]:visible').first().click();
 
   const discrepancy = page.locator(
     '#unifiedPracticalMount [data-practical="balance"]:visible [data-practical-field="discrepancy"]'

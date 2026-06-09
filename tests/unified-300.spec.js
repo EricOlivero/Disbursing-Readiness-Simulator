@@ -101,7 +101,7 @@ for (const [index, profile] of profiles.entries()) {
       await enterApp(page);
       await seedUnifiedProgress(page, profile);
 
-      await page.locator('[data-nav="training"]').first().click();
+      await page.locator('[data-nav="training"]:visible').first().click();
       await expect(page.locator("#training")).toHaveClass(/active/);
       await expect(page.locator("#unifiedTrainingPath")).toBeVisible();
       await expect(page.locator(".unified-module")).toHaveCount(1);
