@@ -1639,6 +1639,7 @@ summary {
 }
 
 #unifiedTrainingPath {
+  display: block !important;
   min-height: 100%;
   background: #f4f7f5;
   color: #102a27;

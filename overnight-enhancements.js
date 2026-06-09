@@ -2376,6 +2376,8 @@
       root.id = "unifiedTrainingPath";
       training.appendChild(root);
     }
+    root.hidden = false;
+    root.removeAttribute("hidden");
 
     const module = unifiedModules[unifiedProgress.current];
     const completeCount = unifiedProgress.completed.length;
@@ -2571,6 +2573,23 @@
     document.addEventListener(
       "click",
       (event) => {
+        const trainingControl = event.target.closest('[data-nav="training"]');
+        if (trainingControl) {
+          [0, 50, 150].forEach((delay) => {
+            setTimeout(() => {
+              renderUnifiedTraining();
+              const training = document.getElementById("training");
+              const root = document.getElementById("unifiedTrainingPath");
+              if (training) training.classList.add("active");
+              if (root) {
+                root.hidden = false;
+                root.removeAttribute("hidden");
+              }
+            }, delay);
+          });
+          return;
+        }
+
         const missionControl = event.target.closest('[data-nav="mission"]');
         if (missionControl && unifiedComplete()) {
           event.preventDefault();
