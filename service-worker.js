@@ -40,3 +40,20 @@ self.addEventListener("fetch", (event) => {
   );
 });
 // Unified Training Bay release: 2026-06-08
+
+// Activate new releases immediately. The app is an actively developed
+// training pilot, so a newly installed worker should not leave phones on an
+// older learner flow until every tab has been closed.
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});

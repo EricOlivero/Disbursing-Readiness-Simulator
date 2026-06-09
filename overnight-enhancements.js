@@ -1816,6 +1816,18 @@
   const unifiedTrainingEnabled =
     !navigator.webdriver || location.search.includes("testUnified=1");
 
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (sessionStorage.getItem("drsReloadedForUpdate") === "1") return;
+      sessionStorage.setItem("drsReloadedForUpdate", "1");
+      location.reload();
+    });
+
+    navigator.serviceWorker.ready
+      .then((registration) => registration.update())
+      .catch(() => {});
+  }
+
   const unifiedModules = [
     {
       id: "roles-577",
