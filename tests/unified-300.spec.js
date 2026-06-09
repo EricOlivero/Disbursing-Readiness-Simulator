@@ -110,7 +110,11 @@ for (const [index, profile] of profiles.entries()) {
       );
 
       if (profile.type === "inexperienced") {
-        await expect(page.locator('[data-practical="dd577"]')).toBeVisible();
+        await expect(
+          page.locator(
+            '#unifiedPracticalMount [data-practical="dd577"]:visible'
+          )
+        ).toHaveCount(1);
         await expect(
           page.locator('[data-unified-module="1"]')
         ).toBeDisabled();

@@ -31,7 +31,9 @@ test("Training Bay presents one mastery module at a time", async ({ page }) => {
   await expect(page.locator("#unifiedTrainingPath")).toBeVisible();
   await expect(page.locator(".unified-module")).toHaveCount(1);
   await expect(page.locator(".unified-readiness strong")).toHaveText(/0\/9|[1-9]\/9/);
-  await expect(page.locator('[data-practical="dd577"]')).toBeVisible();
+  await expect(
+    page.locator('#unifiedPracticalMount [data-practical="dd577"]:visible')
+  ).toHaveCount(1);
   await expect(
     page.locator('[data-unified-action="continue"]')
   ).toBeDisabled();
