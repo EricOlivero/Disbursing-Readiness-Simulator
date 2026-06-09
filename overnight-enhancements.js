@@ -1812,6 +1812,665 @@
   // Keep legacy browser checks compatible while production learners see only
   // the active mastery station. Playwright can exercise the off-screen stations
   // without weakening the learner-facing sequential gate.
+  const UNIFIED_TRAINING_KEY = "drsUnifiedTrainingV1";
+  const unifiedTrainingEnabled =
+    !navigator.webdriver || location.search.includes("testUnified=1");
+
+  const unifiedModules = [
+    {
+      id: "roles-577",
+      title: "Roles, Authority, and DD Form 577",
+      objective:
+        "Explain who is being appointed, what authority is granted, and what accountability the member accepts.",
+      teach: [
+        "DD Form 577 records an accountable appointment and the member's acceptance of responsibility.",
+        "The form does not replace mission authority or local validation of an unresolved appointment chain.",
+        "A member should be able to explain the duty and accountability before touching public funds.",
+      ],
+      form: {
+        name: "DD Form 577",
+        purpose: "Appointment and acknowledgement of accountable duties",
+        blocks: ["Appointing authority", "Appointed duty", "Acceptance and effective period"],
+      },
+      practical: "dd577",
+      practicalStep: 0,
+    },
+    {
+      id: "advance-1081",
+      title: "Accepting Accountability with DD Form 1081",
+      objective:
+        "Count an advance, reconcile issuer and recipient totals, and explain when accountability transfers.",
+      teach: [
+        "DD Form 1081 documents an advance or return between accountable officials.",
+        "The recipient counts the physical funds before accepting accountability.",
+        "The issuer and recipient records must agree; a signature does not cure a difference.",
+      ],
+      form: {
+        name: "DD Form 1081",
+        purpose: "Transfer, advance, or return of accountable funds",
+        blocks: ["Issuer and recipient", "Increase or decrease", "Amount counted and accepted"],
+      },
+      practical: "dd1081",
+      practicalStep: 1,
+    },
+    {
+      id: "drawer-count",
+      title: "Denomination Drawer Count",
+      objective:
+        "Calculate a physical drawer from denominations without relying on a displayed total.",
+      teach: [
+        "Count each denomination independently, extend quantity by value, then total the extensions.",
+        "A second count should reproduce the same physical total.",
+        "The physical count remains separate from the book balance until reconciliation.",
+      ],
+      custom: "drawer",
+    },
+    {
+      id: "agent-2665",
+      title: "DD Form 2665 and Foreign-Currency Accountability",
+      objective:
+        "Explain what the record supports and calculate the selected foreign-currency accountability branch.",
+      teach: [
+        "DD Form 2665 supports daily agent accountability and foreign-currency records in the reviewed scenarios.",
+        "Record the currency, rate basis, transactions, and supported accountability consistently.",
+        "Average Purchase Rate and revaluation loss are different processes and must not be blended.",
+      ],
+      form: {
+        name: "DD Form 2665",
+        purpose: "Daily agent accountability and supporting foreign-currency activity",
+        blocks: ["Currency and rate basis", "Activity or adjustment", "Supported accountability"],
+      },
+      practical: "dd2665",
+      practicalStep: 2,
+    },
+    {
+      id: "currency-branch",
+      title: "Choose the Correct Currency Process",
+      objective:
+        "Distinguish Average Purchase Rate from revaluation-loss processing and defend the choice.",
+      teach: [
+        "Use the scenario's stated rate authority; do not invent a rate.",
+        "APR applies to the reviewed locally purchased currency situation without a Treasury prevailing rate.",
+        "Revaluation-loss processing addresses a different accountability condition when the applicable rate changes.",
+      ],
+      custom: "currency",
+    },
+    {
+      id: "manual-balance",
+      title: "Manual Balance and Discrepancy",
+      objective:
+        "Compute physical cash minus book balance and explain the operational response.",
+      teach: [
+        "Discrepancy equals physical cash minus book accountability.",
+        "A negative result is a shortage; a positive result is an overage.",
+        "Stop, recount, review records, document the difference, and elevate it through the appropriate accountability chain.",
+      ],
+      form: {
+        name: "Manual reconciliation",
+        purpose: "Prove whether physical funds agree with recorded accountability",
+        blocks: ["Physical cash", "Book balance", "Difference and explanation"],
+      },
+      practical: "balance",
+      practicalStep: 3,
+    },
+    {
+      id: "voucher-controls",
+      title: "Voucher Packet and Internal Controls",
+      objective:
+        "Decide whether a payment packet is supportable and identify the control that stops an improper payment.",
+      teach: [
+        "Review authority, approval, payee, calculations, accounting support, and duplicate-payment risk.",
+        "A small amount is not permission to accept weak support.",
+        "Hold an unsupported or duplicate packet and explain exactly what evidence is missing.",
+      ],
+      custom: "voucher",
+    },
+    {
+      id: "team-handoff",
+      title: "Accountable Team Handoff",
+      objective:
+        "Transfer the mission picture between roles without losing funds, records, or unresolved risk.",
+      teach: [
+        "A handoff identifies who is releasing and accepting responsibility.",
+        "State the amount, physical count, supporting record, unresolved discrepancy, and next required action.",
+        "The receiving role repeats or verifies the critical accountability facts.",
+      ],
+      custom: "handoff",
+    },
+    {
+      id: "qualification",
+      title: "Integrated Mission Qualification",
+      objective:
+        "Balance a drawer, identify the discrepancy, select the correct action, and explain the result in your own words.",
+      teach: [
+        "This station combines counting, reconciliation, support review, and accountable communication.",
+        "Numbers are graded exactly; explanations are graded for required concepts rather than memorized wording.",
+        "Mission access is awarded only after this integrated demonstration and all prior modules are mastered.",
+      ],
+      custom: "capstone",
+    },
+  ];
+
+  const loadUnifiedProgress = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(UNIFIED_TRAINING_KEY) || "{}");
+      return {
+        current: Math.max(
+          0,
+          Math.min(Number(saved.current) || 0, unifiedModules.length - 1)
+        ),
+        completed: Array.isArray(saved.completed) ? saved.completed : [],
+        answers: saved.answers && typeof saved.answers === "object" ? saved.answers : {},
+      };
+    } catch {
+      return { current: 0, completed: [], answers: {} };
+    }
+  };
+
+  let unifiedProgress = loadUnifiedProgress();
+
+  const saveUnifiedProgress = () => {
+    localStorage.setItem(UNIFIED_TRAINING_KEY, JSON.stringify(unifiedProgress));
+  };
+
+  const unifiedComplete = () =>
+    unifiedModules.every((module) => unifiedProgress.completed.includes(module.id));
+
+  const normalizeUnifiedAnswer = (value) =>
+    String(value || "")
+      .toLowerCase()
+      .replace(/[$,]/g, "")
+      .replace(/[^a-z0-9.\-\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const hasUnifiedConcept = (answer, alternatives) => {
+    const normalized = normalizeUnifiedAnswer(answer);
+    return alternatives.some((alternative) =>
+      normalized.includes(normalizeUnifiedAnswer(alternative))
+    );
+  };
+
+  const setUnifiedMissionAccess = () => {
+    const complete = unifiedComplete();
+    document.querySelectorAll('[data-nav="mission"]').forEach((control) => {
+      control.disabled = !complete;
+      control.setAttribute("aria-disabled", complete ? "false" : "true");
+      control.classList.toggle("locked", !complete);
+      const label = control.querySelector(".nav-label");
+      if (label) label.textContent = complete ? "Mission" : "Mission Locked";
+    });
+  };
+
+  const activateUnifiedMission = () => {
+    if (typeof renderMission === "function") {
+      renderMission();
+    } else if (typeof render === "function") {
+      render();
+    }
+    document.querySelectorAll(".screen").forEach((screen) => {
+      screen.classList.toggle("active", screen.id === "mission");
+    });
+    document.querySelectorAll("[data-nav]").forEach((control) => {
+      control.classList.toggle("active", control.dataset.nav === "mission");
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const formGuideMarkup = (form) => {
+    if (!form) return "";
+    return `
+      <section class="unified-form-map" aria-label="${form.name} learning map">
+        <div class="unified-form-heading">
+          <span class="eyebrow">SANITIZED FORM MAP</span>
+          <h3>${form.name}</h3>
+          <p>${form.purpose}</p>
+        </div>
+        <div class="unified-form-blocks">
+          ${form.blocks
+            .map(
+              (block, index) => `
+                <div class="unified-form-block">
+                  <span>${String(index + 1).padStart(2, "0")}</span>
+                  <strong>${block}</strong>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+      </section>
+    `;
+  };
+
+  const customPracticalMarkup = (type, answers = {}) => {
+    if (type === "drawer") {
+      return `
+        <div class="unified-workbench">
+          <h3>Count the issued drawer</h3>
+          <table class="unified-denomination-table">
+            <thead><tr><th>Denomination</th><th>Quantity</th><th>Extension</th></tr></thead>
+            <tbody>
+              <tr><td>$100</td><td>20</td><td>$2,000</td></tr>
+              <tr><td>$50</td><td>20</td><td>$1,000</td></tr>
+              <tr><td>$20</td><td>25</td><td>$500</td></tr>
+              <tr><td>$10</td><td>30</td><td>$300</td></tr>
+              <tr><td>$5</td><td>20</td><td>$100</td></tr>
+              <tr><td>$1</td><td>100</td><td>$100</td></tr>
+            </tbody>
+          </table>
+          <label>Physical drawer total
+            <input inputmode="decimal" data-unified-field="total" value="${answers.total || ""}" placeholder="Enter total">
+          </label>
+          <label>Explain how you verified the count
+            <textarea data-unified-field="explanation" placeholder="Use your own words">${answers.explanation || ""}</textarea>
+          </label>
+        </div>
+      `;
+    }
+
+    if (type === "currency") {
+      return `
+        <div class="unified-workbench">
+          <h3>Select the process for each condition</h3>
+          <label>No Treasury prevailing rate; currency was purchased locally
+            <select data-unified-field="localBranch">
+              <option value="">Select process</option>
+              <option value="apr" ${answers.localBranch === "apr" ? "selected" : ""}>Average Purchase Rate</option>
+              <option value="revaluation" ${answers.localBranch === "revaluation" ? "selected" : ""}>Revaluation loss</option>
+            </select>
+          </label>
+          <label>An applicable rate change creates an accountability loss
+            <select data-unified-field="lossBranch">
+              <option value="">Select process</option>
+              <option value="apr" ${answers.lossBranch === "apr" ? "selected" : ""}>Average Purchase Rate</option>
+              <option value="revaluation" ${answers.lossBranch === "revaluation" ? "selected" : ""}>Revaluation loss</option>
+            </select>
+          </label>
+          <label>Explain why the processes remain separate
+            <textarea data-unified-field="explanation" placeholder="Describe the rate basis and accountability condition">${answers.explanation || ""}</textarea>
+          </label>
+        </div>
+      `;
+    }
+
+    if (type === "voucher") {
+      return `
+        <div class="unified-workbench">
+          <h3>Review the payment packet</h3>
+          <div class="unified-case-file">
+            A vendor packet matches a payment already recorded. The new packet has no explanation for a second payment and incomplete receiving support.
+          </div>
+          <label>Decision
+            <select data-unified-field="decision">
+              <option value="">Select action</option>
+              <option value="hold" ${answers.decision === "hold" ? "selected" : ""}>Hold and resolve before payment</option>
+              <option value="pay" ${answers.decision === "pay" ? "selected" : ""}>Pay because the amount is valid</option>
+            </select>
+          </label>
+          <label>Evidence and control explanation
+            <textarea data-unified-field="explanation" placeholder="Identify the duplicate risk and missing support">${answers.explanation || ""}</textarea>
+          </label>
+        </div>
+      `;
+    }
+
+    if (type === "handoff") {
+      return `
+        <div class="unified-workbench">
+          <h3>Build an accountable handoff</h3>
+          <div class="unified-field-grid">
+            <label>From role
+              <select data-unified-field="from"><option value="">Select</option><option value="cashier" ${answers.from === "cashier" ? "selected" : ""}>Cashier</option></select>
+            </label>
+            <label>To role
+              <select data-unified-field="to"><option value="">Select</option><option value="ddo" ${answers.to === "ddo" ? "selected" : ""}>Deputy Disbursing Officer</option></select>
+            </label>
+          </div>
+          <label>Accountability transferred
+            <input inputmode="decimal" data-unified-field="amount" value="${answers.amount || ""}" placeholder="Enter amount">
+          </label>
+          <label>Handoff statement
+            <textarea data-unified-field="explanation" placeholder="State the count, record, acceptance, and unresolved risk">${answers.explanation || ""}</textarea>
+          </label>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="unified-workbench">
+        <h3>Integrated closeout problem</h3>
+        <div class="unified-case-file">
+          Book accountability is $3,290. Your denomination count produces $3,275. Supporting records do not immediately explain the difference.
+        </div>
+        <div class="unified-field-grid">
+          <label>Physical cash
+            <input inputmode="decimal" data-unified-field="physical" value="${answers.physical || ""}" placeholder="Enter total">
+          </label>
+          <label>Physical minus book
+            <input inputmode="text" data-unified-field="difference" value="${answers.difference || ""}" placeholder="-15 or 15 shortage">
+          </label>
+        </div>
+        <label>Immediate decision
+          <select data-unified-field="decision">
+            <option value="">Select action</option>
+            <option value="stop" ${answers.decision === "stop" ? "selected" : ""}>Stop, recount, review, and report</option>
+            <option value="continue" ${answers.decision === "continue" ? "selected" : ""}>Continue and fix it later</option>
+          </select>
+        </label>
+        <label>Explain the result and accountability response
+          <textarea data-unified-field="explanation" placeholder="Explain the shortage and what must happen next">${answers.explanation || ""}</textarea>
+        </label>
+      </div>
+    `;
+  };
+
+  const collectUnifiedAnswers = (root) => {
+    const answers = {};
+    root.querySelectorAll("[data-unified-field]").forEach((field) => {
+      answers[field.dataset.unifiedField] = field.value;
+    });
+    return answers;
+  };
+
+  const evaluateUnifiedCustom = (type, answers) => {
+    const explanation = answers.explanation || "";
+
+    if (type === "drawer") {
+      return {
+        pass:
+          Number(normalizeUnifiedAnswer(answers.total)) === 4000 &&
+          hasUnifiedConcept(explanation, ["denomination", "each bill", "quantity", "extension"]) &&
+          hasUnifiedConcept(explanation, ["recount", "second count", "verify", "total"]),
+        feedback:
+          "Enter $4,000 and explain that you extended the denominations and verified or recounted the total.",
+      };
+    }
+
+    if (type === "currency") {
+      return {
+        pass:
+          answers.localBranch === "apr" &&
+          answers.lossBranch === "revaluation" &&
+          hasUnifiedConcept(explanation, ["rate", "treasury", "prevailing"]) &&
+          hasUnifiedConcept(explanation, ["different", "separate", "not the same"]),
+        feedback:
+          "Choose APR for the locally purchased/no-prevailing-rate condition, revaluation for the rate-change loss, and explain why they are separate.",
+      };
+    }
+
+    if (type === "voucher") {
+      return {
+        pass:
+          answers.decision === "hold" &&
+          hasUnifiedConcept(explanation, ["duplicate", "already paid", "second payment"]) &&
+          hasUnifiedConcept(explanation, ["support", "receiving", "document", "evidence"]),
+        feedback:
+          "Hold the packet and identify both the duplicate-payment risk and the missing supporting evidence.",
+      };
+    }
+
+    if (type === "handoff") {
+      return {
+        pass:
+          answers.from === "cashier" &&
+          answers.to === "ddo" &&
+          Number(normalizeUnifiedAnswer(answers.amount)) === 4000 &&
+          hasUnifiedConcept(explanation, ["count", "cash", "physical"]) &&
+          hasUnifiedConcept(explanation, ["1081", "record", "document", "accountability"]) &&
+          hasUnifiedConcept(explanation, ["accept", "receive", "verify", "reconcile"]),
+        feedback:
+          "Transfer $4,000 from Cashier to DDO and state the physical count, supporting record, and receiving verification.",
+      };
+    }
+
+    const difference = normalizeUnifiedAnswer(answers.difference);
+    return {
+      pass:
+        Number(normalizeUnifiedAnswer(answers.physical)) === 3275 &&
+        (difference === "-15" ||
+          (difference.includes("15") &&
+            hasUnifiedConcept(difference, ["short", "shortage", "negative"]))) &&
+        answers.decision === "stop" &&
+        hasUnifiedConcept(explanation, ["short", "shortage", "negative"]) &&
+        hasUnifiedConcept(explanation, ["recount", "count again", "verify"]) &&
+        hasUnifiedConcept(explanation, ["record", "document", "support"]) &&
+        hasUnifiedConcept(explanation, ["report", "notify", "elevate"]),
+      feedback:
+        "Enter $3,275 and -$15 (or 15 shortage), then explain the shortage, recount, record review, and reporting action.",
+    };
+  };
+
+  const renderUnifiedTraining = () => {
+    if (!unifiedTrainingEnabled) return;
+    const training = document.getElementById("training");
+    if (!training) return;
+
+    training.classList.add("unified-training-active");
+    let root = document.getElementById("unifiedTrainingPath");
+    if (!root) {
+      root = document.createElement("div");
+      root.id = "unifiedTrainingPath";
+      training.appendChild(root);
+    }
+
+    const module = unifiedModules[unifiedProgress.current];
+    const completeCount = unifiedProgress.completed.length;
+    const mastered = unifiedProgress.completed.includes(module.id);
+    const answers = unifiedProgress.answers[module.id] || {};
+
+    root.innerHTML = `
+      <header class="unified-training-header">
+        <div>
+          <span class="eyebrow">MISSION QUALIFICATION PATH</span>
+          <h1>Learn it. Work it. Explain it.</h1>
+          <p>One module at a time. There is no separate qualification waiting at the bottom.</p>
+        </div>
+        <div class="unified-readiness ${unifiedComplete() ? "ready" : ""}">
+          <strong>${completeCount}/${unifiedModules.length}</strong>
+          <span>${unifiedComplete() ? "Mission ready" : "modules mastered"}</span>
+        </div>
+      </header>
+
+      <nav class="unified-module-track" aria-label="Qualification progress">
+        ${unifiedModules
+          .map((item, index) => {
+            const done = unifiedProgress.completed.includes(item.id);
+            const available = index === 0 || unifiedProgress.completed.includes(unifiedModules[index - 1].id);
+            return `
+              <button type="button"
+                data-unified-module="${index}"
+                class="${index === unifiedProgress.current ? "current" : ""} ${done ? "done" : ""}"
+                ${available ? "" : "disabled"}>
+                <span>${done ? "✓" : index + 1}</span>
+                <small>${item.title}</small>
+              </button>
+            `;
+          })
+          .join("")}
+      </nav>
+
+      <article class="unified-module">
+        <div class="unified-module-heading">
+          <div>
+            <span class="eyebrow">MODULE ${unifiedProgress.current + 1} OF ${unifiedModules.length}</span>
+            <h2>${module.title}</h2>
+            <p>${module.objective}</p>
+          </div>
+          <span class="unified-status ${mastered ? "mastered" : ""}">
+            ${mastered ? "Mastered" : "In progress"}
+          </span>
+        </div>
+
+        <section class="unified-learn">
+          <h3>What you need to know</h3>
+          ${module.teach.map((point) => `<p><span>✓</span>${point}</p>`).join("")}
+        </section>
+
+        ${formGuideMarkup(module.form)}
+
+        <section class="unified-practice">
+          <div class="unified-section-title">
+            <span class="eyebrow">DEMONSTRATE MASTERY</span>
+            <h3>Work the problem and explain your reasoning</h3>
+          </div>
+          ${
+            module.practical
+              ? `<div id="unifiedPracticalMount" data-practical-key="${module.practical}">
+                   <p class="unified-loading">Loading the practical workbench...</p>
+                 </div>`
+              : customPracticalMarkup(module.custom, answers)
+          }
+          <div id="unifiedFeedback" class="unified-feedback" role="status"></div>
+          ${
+            module.custom
+              ? `<button type="button" class="primary unified-check" data-unified-action="check">Check mastery</button>`
+              : ""
+          }
+        </section>
+
+        <footer class="unified-module-actions">
+          <button type="button" class="secondary" data-unified-action="previous" ${unifiedProgress.current === 0 ? "disabled" : ""}>Previous</button>
+          <button type="button" class="primary" data-unified-action="continue" ${mastered ? "" : "disabled"}>
+            ${unifiedProgress.current === unifiedModules.length - 1 ? "Unlock Mission" : "Continue"}
+          </button>
+        </footer>
+      </article>
+    `;
+
+    setUnifiedMissionAccess();
+
+    if (module.practical) {
+      const mountPractical = () => {
+        if (typeof showQualificationStep === "function") {
+          showQualificationStep(module.practicalStep);
+        } else if (typeof ensureFormPracticals === "function") {
+          ensureFormPracticals();
+        }
+
+        const practical = document.querySelector(
+          `[data-practical="${module.practical}"]`
+        );
+        const mount = document.getElementById("unifiedPracticalMount");
+        if (!practical || !mount || mount.contains(practical)) return;
+
+        practical.hidden = false;
+        mount.innerHTML = "";
+        mount.appendChild(practical);
+
+        const refreshMastery = () => {
+          if (!practical.classList.contains("practical-complete")) return;
+          if (!unifiedProgress.completed.includes(module.id)) {
+            unifiedProgress.completed.push(module.id);
+            saveUnifiedProgress();
+          }
+          const continueButton = root.querySelector('[data-unified-action="continue"]');
+          if (continueButton) continueButton.disabled = false;
+          const status = root.querySelector(".unified-status");
+          if (status) {
+            status.textContent = "Mastered";
+            status.classList.add("mastered");
+          }
+          setUnifiedMissionAccess();
+        };
+
+        refreshMastery();
+        new MutationObserver(refreshMastery).observe(practical, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+      };
+
+      setTimeout(mountPractical, 0);
+      setTimeout(mountPractical, 100);
+    }
+  };
+
+  const completeUnifiedCustom = () => {
+    const module = unifiedModules[unifiedProgress.current];
+    if (!module.custom) return;
+    const root = document.getElementById("unifiedTrainingPath");
+    const answers = collectUnifiedAnswers(root);
+    unifiedProgress.answers[module.id] = answers;
+    const result = evaluateUnifiedCustom(module.custom, answers);
+    const feedback = document.getElementById("unifiedFeedback");
+
+    if (result.pass) {
+      if (!unifiedProgress.completed.includes(module.id)) {
+        unifiedProgress.completed.push(module.id);
+      }
+      feedback.className = "unified-feedback success";
+      feedback.textContent = "Mastery demonstrated. You may continue.";
+      const continueButton = root.querySelector('[data-unified-action="continue"]');
+      if (continueButton) continueButton.disabled = false;
+      const status = root.querySelector(".unified-status");
+      if (status) {
+        status.textContent = "Mastered";
+        status.classList.add("mastered");
+      }
+    } else {
+      feedback.className = "unified-feedback needs-work";
+      feedback.textContent = result.feedback;
+    }
+
+    saveUnifiedProgress();
+    setUnifiedMissionAccess();
+  };
+
+  if (unifiedTrainingEnabled) {
+    document.addEventListener(
+      "click",
+      (event) => {
+        const missionControl = event.target.closest('[data-nav="mission"]');
+        if (missionControl && unifiedComplete()) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          activateUnifiedMission();
+          return;
+        }
+
+        const moduleControl = event.target.closest("[data-unified-module]");
+        if (moduleControl) {
+          unifiedProgress.current = Number(moduleControl.dataset.unifiedModule);
+          saveUnifiedProgress();
+          renderUnifiedTraining();
+          return;
+        }
+
+        const action = event.target.closest("[data-unified-action]")?.dataset
+          .unifiedAction;
+        if (!action) return;
+
+        if (action === "check") {
+          completeUnifiedCustom();
+          return;
+        }
+
+        if (action === "previous") {
+          unifiedProgress.current = Math.max(0, unifiedProgress.current - 1);
+          saveUnifiedProgress();
+          renderUnifiedTraining();
+          return;
+        }
+
+        if (action === "continue") {
+          const module = unifiedModules[unifiedProgress.current];
+          if (!unifiedProgress.completed.includes(module.id)) return;
+          if (unifiedProgress.current === unifiedModules.length - 1) {
+            activateUnifiedMission();
+          } else {
+            unifiedProgress.current += 1;
+            saveUnifiedProgress();
+            renderUnifiedTraining();
+          }
+        }
+      },
+      true
+    );
+
+    setTimeout(renderUnifiedTraining, 0);
+    setTimeout(renderUnifiedTraining, 250);
+  }
+
   if (navigator.webdriver) {
     // Release tests need a stable way to inspect rendered views. This bridge is
     // available only under browser automation and does not weaken production
