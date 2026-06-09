@@ -1,7 +1,7 @@
 const { test, expect } = require("@playwright/test");
 
 async function enterApp(page) {
-  await page.goto("/");
+  await page.goto("/?testUnified=1");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
 
@@ -28,11 +28,12 @@ test("Training Bay presents one mastery module at a time", async ({ page }) => {
   await page.locator('[data-nav="training"]').first().click();
 
   await expect(page.locator("#training")).toHaveClass(/active/);
-  await expect(page.locator(".form-practical")).toHaveCount(4);
-  await expect(page.locator(".form-practical:visible")).toHaveCount(1);
+  await expect(page.locator("#unifiedTrainingPath")).toBeVisible();
+  await expect(page.locator(".unified-module")).toHaveCount(1);
+  await expect(page.locator(".unified-readiness strong")).toHaveText(/0\/9|[1-9]\/9/);
   await expect(page.locator('[data-practical="dd577"]')).toBeVisible();
   await expect(
-    page.locator('[data-overnight-action="qualification-next"]')
+    page.locator('[data-unified-action="continue"]')
   ).toBeDisabled();
 });
 
