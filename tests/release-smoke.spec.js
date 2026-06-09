@@ -41,17 +41,30 @@ test("Training Bay presents one mastery module at a time", async ({ page }) => {
 
 test("balance discrepancy field accepts a negative value", async ({ page }) => {
   await enterApp(page);
+
+  await page.evaluate(() => {
+    localStorage.setItem(
+      "drsUnifiedTrainingV1",
+      JSON.stringify({
+        current: 5,
+        completed: [
+          "roles-577",
+          "advance-1081",
+          "drawer-count",
+          "agent-2665",
+          "currency-branch",
+        ],
+        answers: {},
+      })
+    );
+  });
+  await page.reload();
   await page.locator('[data-nav="training"]').first().click();
 
   const discrepancy = page.locator(
-    '[data-practical="balance"] [data-practical-field="discrepancy"]'
+    '#unifiedPracticalMount [data-practical="balance"]:visible [data-practical-field="discrepancy"]'
   );
-  await discrepancy.evaluate((input) => {
-    input.hidden = false;
-    input.value = "-15";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-  });
-
+  await expect(discrepancy).toBeVisible();
+  await discrepancy.fill("-15");
   await expect(discrepancy).toHaveValue("-15");
 });
