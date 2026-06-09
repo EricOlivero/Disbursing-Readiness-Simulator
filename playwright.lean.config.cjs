@@ -6,10 +6,10 @@ module.exports = defineConfig({
   expect: {
     timeout: 10000,
   },
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: true,
   retries: 0,
-  workers: 1,
+  workers: 4,
   reporter: [["line"]],
   use: {
     baseURL: "http://127.0.0.1:4173",
