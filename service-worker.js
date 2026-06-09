@@ -39,7 +39,7 @@ self.addEventListener("fetch", (event) => {
       .catch(() => caches.match(event.request).then((cached) => cached || caches.match("./index.html")))
   );
 });
-// Unified Training Bay release: 2026-06-08
+// Instructional Training Bay release: 2026-06-08-r2
 
 // Activate new releases immediately. The app is an actively developed
 // training pilot, so a newly installed worker should not leave phones on an

@@ -1812,7 +1812,7 @@
   // Keep legacy browser checks compatible while production learners see only
   // the active mastery station. Playwright can exercise the off-screen stations
   // without weakening the learner-facing sequential gate.
-  const UNIFIED_TRAINING_KEY = "drsUnifiedTrainingV1";
+  const UNIFIED_TRAINING_KEY = "drsUnifiedTrainingV2";
   const unifiedTrainingEnabled =
     !navigator.webdriver || location.search.includes("testUnified=1");
 
@@ -1833,16 +1833,31 @@
       id: "roles-577",
       title: "Roles, Authority, and DD Form 577",
       objective:
-        "Explain who is being appointed, what authority is granted, and what accountability the member accepts.",
+        "Read an appointment, identify the accountable duty, and explain what the member accepts before handling funds.",
+      why:
+        "A mission should not begin with cash changing hands. It begins by proving that the person performing the duty is appointed and understands the accountability attached to that duty.",
       teach: [
-        "DD Form 577 records an accountable appointment and the member's acceptance of responsibility.",
-        "The form does not replace mission authority or local validation of an unresolved appointment chain.",
-        "A member should be able to explain the duty and accountability before touching public funds.",
+        "DD Form 577 records an appointment to an accountable duty and the member's acknowledgement of that responsibility.",
+        "Read three things first: who appoints, which duty is assigned, and when the appointment becomes effective.",
+        "The appointed member must understand the limits of the duty. Appointment does not authorize every disbursing action.",
+        "For this cashier exercise, identify the Disbursing Officer as the appointing role and Cashier as the appointed duty.",
       ],
+      example:
+        "A cashier reports for duty with cash but no verified appointment. The correct action is to stop before issuing funds, verify the appointment and effective period, and have the member explain the duty being accepted.",
+      commonError:
+        "Treating a signature as proof that the member understands the duty, or assuming one appointment authorizes unrelated roles.",
+      remember:
+        "No verified appointment, no accountable transaction.",
       form: {
         name: "DD Form 577",
-        purpose: "Appointment and acknowledgement of accountable duties",
-        blocks: ["Appointing authority", "Appointed duty", "Acceptance and effective period"],
+        purpose:
+          "Documents who is appointed, the accountable duty assigned, and the member's acknowledgement.",
+        blocks: [
+          "Appointing authority: who grants the duty",
+          "Appointed duty: the exact accountable role",
+          "Effective period: when authority begins and ends",
+          "Acknowledgement: acceptance of the responsibility",
+        ],
       },
       practical: "dd577",
       practicalStep: 0,
@@ -1852,15 +1867,30 @@
       title: "Accepting Accountability with DD Form 1081",
       objective:
         "Count an advance, reconcile issuer and recipient totals, and explain when accountability transfers.",
+      why:
+        "DD Form 1081 is the bridge between two accountable records. If the physical funds and both records do not agree, the transfer is not ready for acceptance.",
       teach: [
-        "DD Form 1081 documents an advance or return between accountable officials.",
-        "The recipient counts the physical funds before accepting accountability.",
-        "The issuer and recipient records must agree; a signature does not cure a difference.",
+        "Use DD Form 1081 to document an advance or return of accountable funds between authorized roles.",
+        "The recipient counts the funds before acceptance. Never accept a total based only on the issuer's statement.",
+        "Determine whether the transaction increases or decreases each person's accountability.",
+        "The issuer's amount, recipient's amount, and physical count must reconcile before the transfer is complete.",
       ],
+      example:
+        "The DDO advances $4,000 to a cashier. The cashier counts $4,000, the form shows a $4,000 increase to the cashier, and both parties agree. The transfer reconciles and may be accepted.",
+      commonError:
+        "Signing first and counting later, or entering the same increase/decrease direction for both sides without considering whose accountability changes.",
+      remember:
+        "Count, compare, explain, then accept.",
       form: {
         name: "DD Form 1081",
-        purpose: "Transfer, advance, or return of accountable funds",
-        blocks: ["Issuer and recipient", "Increase or decrease", "Amount counted and accepted"],
+        purpose:
+          "Creates the accountable record for an advance, transfer, or return of funds.",
+        blocks: [
+          "From/To: identify issuer and recipient",
+          "Transaction direction: increase or decrease",
+          "Currency and amount: what physically moved",
+          "Acceptance: counted amount and acknowledgement",
+        ],
       },
       practical: "dd1081",
       practicalStep: 1,
@@ -1870,11 +1900,20 @@
       title: "Denomination Drawer Count",
       objective:
         "Calculate a physical drawer from denominations without relying on a displayed total.",
+      why:
+        "A book balance is only a recorded expectation. A denomination count proves what is physically present.",
       teach: [
         "Count each denomination independently, extend quantity by value, then total the extensions.",
         "A second count should reproduce the same physical total.",
-        "The physical count remains separate from the book balance until reconciliation.",
+        "Keep the physical count separate from the book balance until the count is complete.",
+        "If the first and second count differ, stop and resolve the count before reconciliation.",
       ],
+      example:
+        "Twenty $100 bills equal $2,000. Twenty $50 bills equal $1,000. Continue each extension, then add the denomination totals. Do not start with the expected $4,000 and make the count fit it.",
+      commonError:
+        "Adding bill quantities instead of dollar extensions, or changing a count to match the expected accountability.",
+      remember:
+        "The drawer tells you the physical truth; the records are compared afterward.",
       custom: "drawer",
     },
     {
@@ -1882,15 +1921,31 @@
       title: "DD Form 2665 and Foreign-Currency Accountability",
       objective:
         "Explain what the record supports and calculate the selected foreign-currency accountability branch.",
+      why:
+        "Foreign-currency accountability can look balanced in local currency while being wrong in U.S. dollar equivalent. The supporting record must show the rate basis and accountability effect.",
       teach: [
-        "DD Form 2665 supports daily agent accountability and foreign-currency records in the reviewed scenarios.",
-        "Record the currency, rate basis, transactions, and supported accountability consistently.",
-        "Average Purchase Rate and revaluation loss are different processes and must not be blended.",
+        "In the reviewed scenarios, DD Form 2665 supports daily agent accountability and foreign-currency activity.",
+        "Identify the currency, the approved rate basis supplied by the scenario, the transaction or adjustment, and the resulting supported accountability.",
+        "Keep foreign currency and U.S. dollar equivalent clearly distinguished.",
+        "Average Purchase Rate and revaluation-loss processing are separate branches. The form records the selected process; it does not decide the branch for you.",
       ],
+      example:
+        "An agent reports locally purchased currency using a stated Average Purchase Rate. Record the currency and rate basis, calculate the U.S. dollar equivalent, and ensure the supported accountability agrees with the transaction evidence.",
+      commonError:
+        "Using the daily operational rate when the scenario requires a different approved basis, or combining APR and revaluation into one calculation.",
+      remember:
+        "Name the currency, name the rate basis, show the calculation, support the result.",
       form: {
         name: "DD Form 2665",
-        purpose: "Daily agent accountability and supporting foreign-currency activity",
-        blocks: ["Currency and rate basis", "Activity or adjustment", "Supported accountability"],
+        purpose:
+          "Supports the agent's daily accountability and documented foreign-currency activity.",
+        blocks: [
+          "Accountable agent and reporting period",
+          "Currency type and approved rate basis",
+          "Transaction, gain/loss, or adjustment",
+          "Calculated U.S. dollar equivalent",
+          "Supported ending accountability",
+        ],
       },
       practical: "dd2665",
       practicalStep: 2,
@@ -1900,11 +1955,20 @@
       title: "Choose the Correct Currency Process",
       objective:
         "Distinguish Average Purchase Rate from revaluation-loss processing and defend the choice.",
+      why:
+        "The arithmetic can be correct and the accountability still wrong if the learner selects the wrong process.",
       teach: [
-        "Use the scenario's stated rate authority; do not invent a rate.",
-        "APR applies to the reviewed locally purchased currency situation without a Treasury prevailing rate.",
-        "Revaluation-loss processing addresses a different accountability condition when the applicable rate changes.",
+        "First identify how the currency was obtained and what rate authority the mission provides.",
+        "In the reviewed training scenario, APR applies when there is no Treasury prevailing rate and foreign currency is purchased locally.",
+        "Revaluation-loss processing applies to a different condition: an applicable rate change produces an accountability gain or loss.",
+        "Use the rate supplied by the exercise. Never invent, average, or substitute a rate because it seems more current.",
       ],
+      example:
+        "Locally purchased currency with no Treasury prevailing rate points to APR. A later applicable rate change that reduces the U.S. dollar value of held currency points to revaluation loss.",
+      commonError:
+        "Choosing a process based on whether the result is favorable rather than on the source of the currency and the authorized rate condition.",
+      remember:
+        "Situation first, process second, calculation third.",
       custom: "currency",
     },
     {
@@ -1912,15 +1976,31 @@
       title: "Manual Balance and Discrepancy",
       objective:
         "Compute physical cash minus book balance and explain the operational response.",
+      why:
+        "Balancing is not merely reaching zero. The member must prove the physical count, identify the direction of any difference, and explain the response.",
       teach: [
         "Discrepancy equals physical cash minus book accountability.",
         "A negative result is a shortage; a positive result is an overage.",
-        "Stop, recount, review records, document the difference, and elevate it through the appropriate accountability chain.",
+        "A zero result means the two totals agree, but the learner must still explain what was compared.",
+        "For a difference: stop, recount independently, review supporting records, document the difference, and elevate it through the appropriate accountability chain.",
       ],
+      example:
+        "Physical cash is $3,275 and book accountability is $3,290. $3,275 - $3,290 = -$15. The result is a $15 shortage, not an overage and not simply 'off by 15.'",
+      commonError:
+        "Reversing the subtraction, dropping the negative sign, or continuing operations before the discrepancy is addressed.",
+      remember:
+        "Physical minus book: negative is short, positive is over.",
       form: {
         name: "Manual reconciliation",
-        purpose: "Prove whether physical funds agree with recorded accountability",
-        blocks: ["Physical cash", "Book balance", "Difference and explanation"],
+        purpose:
+          "Proves whether physical funds agree with recorded accountability and documents the conclusion.",
+        blocks: [
+          "Verified physical cash count",
+          "Book or recorded accountability",
+          "Physical minus book calculation",
+          "Shortage, overage, or balanced conclusion",
+          "Immediate control and reporting response",
+        ],
       },
       practical: "balance",
       practicalStep: 3,
@@ -1930,11 +2010,20 @@
       title: "Voucher Packet and Internal Controls",
       objective:
         "Decide whether a payment packet is supportable and identify the control that stops an improper payment.",
+      why:
+        "Cash can balance perfectly while the disbursing operation still fails if an unsupported or duplicate payment is made.",
       teach: [
-        "Review authority, approval, payee, calculations, accounting support, and duplicate-payment risk.",
+        "Before payment, verify legal authority, approval, correct payee, calculations, accounting support, fund availability, and evidence of receipt.",
+        "Compare identifying information and prior records for duplicate-payment risk.",
         "A small amount is not permission to accept weak support.",
-        "Hold an unsupported or duplicate packet and explain exactly what evidence is missing.",
+        "Hold an unsupported or duplicate packet and state exactly what evidence or resolution is required.",
       ],
+      example:
+        "A second packet matches a previously recorded vendor payment and has no explanation or complete receiving support. Hold it. The control is preventing a duplicate or unsupported payment before cash leaves accountability.",
+      commonError:
+        "Approving because the vendor, amount, or purchase looks familiar without comparing the packet to prior payment records.",
+      remember:
+        "A complete packet proves who, what, why, authority, support, and no duplicate.",
       custom: "voucher",
     },
     {
@@ -1942,11 +2031,20 @@
       title: "Accountable Team Handoff",
       objective:
         "Transfer the mission picture between roles without losing funds, records, or unresolved risk.",
+      why:
+        "Team missions fail when each person knows only their own task. A handoff must preserve the accountability picture across roles.",
       teach: [
-        "A handoff identifies who is releasing and accepting responsibility.",
-        "State the amount, physical count, supporting record, unresolved discrepancy, and next required action.",
-        "The receiving role repeats or verifies the critical accountability facts.",
+        "Identify the releasing role, receiving role, amount, currency, physical count, and supporting record.",
+        "State any unresolved discrepancy, pending document, rate issue, or operational restriction.",
+        "The receiving role repeats or verifies the critical facts before accepting the handoff.",
+        "A verbal handoff does not replace required accountability documentation.",
       ],
+      example:
+        "Cashier to DDO: 'I am returning $4,000. I counted the denominations twice, the amount agrees with the DD Form 1081, and there are no unresolved transactions.' The DDO verifies before acceptance.",
+      commonError:
+        "Saying only 'everything is good' without identifying the amount, record, count, and unresolved risk.",
+      remember:
+        "Who, what amount, what record, what condition, who accepts.",
       custom: "handoff",
     },
     {
@@ -1954,11 +2052,20 @@
       title: "Integrated Mission Qualification",
       objective:
         "Balance a drawer, identify the discrepancy, select the correct action, and explain the result in your own words.",
+      why:
+        "This is the bridge from isolated practice to the team mission. It proves the learner can combine facts, calculations, controls, and accountable communication.",
       teach: [
-        "This station combines counting, reconciliation, support review, and accountable communication.",
-        "Numbers are graded exactly; explanations are graded for required concepts rather than memorized wording.",
-        "Mission access is awarded only after this integrated demonstration and all prior modules are mastered.",
+        "Work in order: identify authority and records, establish the physical count, calculate the difference, decide the control response, then communicate the result.",
+        "Numbers and process choices are exact. Explanations are graded for the required concepts, not memorized wording.",
+        "A correct number with an unsafe action is not mastery. A good explanation with a wrong balance is not mastery.",
+        "Mission access is awarded only after this demonstration and every prior module is mastered.",
       ],
+      example:
+        "If the result is a shortage, the final response should name the shortage, describe the recount and record review, and explain who must be notified before normal activity continues.",
+      commonError:
+        "Rushing directly to the answer without showing what was counted, what record was compared, or why the selected action protects accountability.",
+      remember:
+        "Count it, reconcile it, control it, explain it.",
       custom: "capstone",
     },
   ];
@@ -2040,14 +2147,19 @@
         </div>
         <div class="unified-form-blocks">
           ${form.blocks
-            .map(
-              (block, index) => `
+            .map((block, index) => {
+              const [label, ...detailParts] = block.split(":");
+              const detail = detailParts.join(":").trim();
+              return `
                 <div class="unified-form-block">
                   <span>${String(index + 1).padStart(2, "0")}</span>
-                  <strong>${block}</strong>
+                  <div>
+                    <strong>${label}</strong>
+                    ${detail ? `<small>${detail}</small>` : ""}
+                  </div>
                 </div>
-              `
-            )
+              `;
+            })
             .join("")}
         </div>
       </section>
@@ -2273,9 +2385,9 @@
     root.innerHTML = `
       <header class="unified-training-header">
         <div>
-          <span class="eyebrow">MISSION QUALIFICATION PATH</span>
-          <h1>Learn it. Work it. Explain it.</h1>
-          <p>One module at a time. There is no separate qualification waiting at the bottom.</p>
+          <span class="eyebrow">TRAINING BAY</span>
+          <h1>Disbursing Mission Qualification</h1>
+          <p>Learn the concept, see it applied, work the problem, and demonstrate mastery.</p>
         </div>
         <div class="unified-readiness ${unifiedComplete() ? "ready" : ""}">
           <strong>${completeCount}/${unifiedModules.length}</strong>
@@ -2292,14 +2404,19 @@
               <button type="button"
                 data-unified-module="${index}"
                 class="${index === unifiedProgress.current ? "current" : ""} ${done ? "done" : ""}"
+                aria-label="Module ${index + 1}: ${item.title}${done ? ", mastered" : ""}"
+                title="${item.title}"
                 ${available ? "" : "disabled"}>
                 <span>${done ? "✓" : index + 1}</span>
-                <small>${item.title}</small>
               </button>
             `;
           })
           .join("")}
       </nav>
+      <div class="unified-track-caption">
+        <span>Module ${unifiedProgress.current + 1} of ${unifiedModules.length}</span>
+        <strong>${module.title}</strong>
+      </div>
 
       <article class="unified-module">
         <div class="unified-module-heading">
@@ -2314,16 +2431,38 @@
         </div>
 
         <section class="unified-learn">
-          <h3>What you need to know</h3>
+          <div class="unified-why">
+            <span class="eyebrow">WHY IT MATTERS</span>
+            <p>${module.why}</p>
+          </div>
+          <h3>Core concept</h3>
           ${module.teach.map((point) => `<p><span>✓</span>${point}</p>`).join("")}
         </section>
 
         ${formGuideMarkup(module.form)}
 
+        <section class="unified-example">
+          <div>
+            <span class="eyebrow">WORKED EXAMPLE</span>
+            <h3>See the decision before you work it</h3>
+            <p>${module.example}</p>
+          </div>
+          <aside>
+            <span class="eyebrow">WATCH FOR</span>
+            <p>${module.commonError}</p>
+          </aside>
+        </section>
+
+        <div class="unified-memory-line">
+          <span>REMEMBER</span>
+          <strong>${module.remember}</strong>
+        </div>
+
         <section class="unified-practice">
           <div class="unified-section-title">
-            <span class="eyebrow">DEMONSTRATE MASTERY</span>
-            <h3>Work the problem and explain your reasoning</h3>
+            <span class="eyebrow">GUIDED PRACTICE AND MASTERY</span>
+            <h3>Apply what you just learned</h3>
+            <p>Use the lesson and form map above. Your explanation may use your own words but must include the required accountability concepts.</p>
           </div>
           ${
             module.practical

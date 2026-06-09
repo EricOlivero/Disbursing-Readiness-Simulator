@@ -1650,7 +1650,7 @@ summary {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 2rem;
   align-items: end;
-  padding: clamp(1.5rem, 4vw, 3.5rem);
+  padding: clamp(1.25rem, 3vw, 2.25rem);
   background: #0c332e;
   color: #fff;
 }
@@ -1658,8 +1658,8 @@ summary {
 .unified-training-header h1 {
   max-width: 760px;
   margin: 0.35rem 0 0.55rem;
-  font-size: clamp(2rem, 6vw, 4.5rem);
-  line-height: 0.98;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.04;
   letter-spacing: 0;
 }
 
@@ -1697,37 +1697,38 @@ summary {
 }
 
 .unified-module-track {
-  display: grid;
-  grid-template-columns: repeat(9, minmax(56px, 1fr));
-  gap: 0;
+  display: flex;
+  justify-content: center;
+  gap: clamp(0.25rem, 1vw, 0.75rem);
   overflow-x: auto;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid #cbd7d3;
   background: #fff;
 }
 
 .unified-module-track button {
   display: grid;
-  min-width: 94px;
-  min-height: 78px;
+  flex: 0 0 42px;
+  min-width: 42px;
+  min-height: 42px;
   place-items: center;
-  gap: 0.35rem;
-  padding: 0.65rem 0.4rem;
-  border: 0;
-  border-right: 1px solid #dce4e1;
-  border-radius: 0;
+  padding: 0;
+  border: 1px solid #9baca8;
+  border-radius: 50%;
   background: #fff;
   color: #47615d;
 }
 
 .unified-module-track button.current {
-  box-shadow: inset 0 -4px 0 #9bc034;
-  background: #f5f9eb;
+  border-color: #0c675b;
+  box-shadow: 0 0 0 3px #dcebc0;
+  background: #eff6dc;
   color: #102a27;
 }
 
 .unified-module-track button.done span {
-  background: #0c675b;
-  color: #fff;
+  background: transparent;
+  color: inherit;
 }
 
 .unified-module-track button:disabled {
@@ -1735,19 +1736,32 @@ summary {
 }
 
 .unified-module-track button span {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 1px solid #9baca8;
-  border-radius: 50%;
+  display: block;
+  width: auto;
+  height: auto;
+  border: 0;
   font-weight: 800;
 }
 
-.unified-module-track button small {
-  max-width: 110px;
-  font-size: 0.68rem;
-  line-height: 1.15;
+.unified-module-track button.done {
+  border-color: #0c675b;
+  background: #0c675b;
+  color: #fff;
+}
+
+.unified-track-caption {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid #cbd7d3;
+  background: #f7faf8;
+  color: #49615d;
+  font-size: 0.82rem;
+}
+
+.unified-track-caption strong {
+  color: #102a27;
 }
 
 .unified-module {
@@ -1797,7 +1811,8 @@ summary {
 
 .unified-learn,
 .unified-form-map,
-.unified-practice {
+.unified-practice,
+.unified-example {
   margin-top: 1rem;
   padding: clamp(1.1rem, 3vw, 1.75rem);
   border: 1px solid #cbd7d3;
@@ -1806,7 +1821,8 @@ summary {
 
 .unified-learn h3,
 .unified-form-map h3,
-.unified-practice h3 {
+.unified-practice h3,
+.unified-example h3 {
   margin: 0 0 0.85rem;
   font-size: 1.25rem;
   letter-spacing: 0;
@@ -1819,6 +1835,22 @@ summary {
   margin: 0;
   padding: 0.75rem 0;
   border-top: 1px solid #e3eae7;
+}
+
+.unified-why {
+  margin: -0.2rem -0.2rem 1rem;
+  padding: 1rem;
+  border-left: 4px solid #0c675b;
+  background: #eaf2ef;
+}
+
+.unified-why p {
+  display: block;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  border: 0;
+  color: #29443f;
+  font-weight: 650;
 }
 
 .unified-learn p:first-of-type {
@@ -1835,6 +1867,45 @@ summary {
   grid-template-columns: minmax(210px, 0.75fr) minmax(0, 1.25fr);
   gap: 1.25rem;
   background: #eaf2ef;
+}
+
+.unified-example {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.65fr);
+  gap: 1rem;
+}
+
+.unified-example p {
+  margin: 0;
+  color: #344f4a;
+  line-height: 1.55;
+}
+
+.unified-example aside {
+  padding: 1rem;
+  border-left: 4px solid #d3a92b;
+  background: #fff8df;
+}
+
+.unified-memory-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background: #163c36;
+  color: #fff;
+}
+
+.unified-memory-line span {
+  color: #cfe48c;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.unified-memory-line strong {
+  font-size: 0.95rem;
 }
 
 .unified-form-heading p {
@@ -1867,7 +1938,16 @@ summary {
 }
 
 .unified-form-block strong {
-  padding: 0.65rem;
+  display: block;
+  padding: 0.65rem 0.65rem 0;
+}
+
+.unified-form-block small {
+  display: block;
+  padding: 0.2rem 0.65rem 0.65rem;
+  color: #5a6f6a;
+  font-size: 0.78rem;
+  line-height: 1.3;
 }
 
 .unified-section-title {
@@ -1876,6 +1956,11 @@ summary {
 
 .unified-section-title h3 {
   margin-top: 0.25rem;
+}
+
+.unified-section-title p {
+  margin: 0.35rem 0 0;
+  color: #49615d;
 }
 
 .unified-workbench {
@@ -1999,7 +2084,8 @@ summary {
   .unified-training-header,
   .unified-module-heading,
   .unified-form-map,
-  .unified-field-grid {
+  .unified-field-grid,
+  .unified-example {
     grid-template-columns: 1fr;
   }
 
@@ -2010,6 +2096,16 @@ summary {
   .unified-module {
     width: min(100% - 1rem, 980px);
     margin-top: 0.5rem;
+  }
+
+  .unified-module-track {
+    justify-content: flex-start;
+  }
+
+  .unified-track-caption {
+    display: grid;
+    gap: 0.15rem;
+    justify-content: start;
   }
 
   .unified-module-actions {
