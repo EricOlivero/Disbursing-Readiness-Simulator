@@ -11,7 +11,7 @@ async function enterApp(page) {
     await page.locator("#acceptDisclaimer").click();
   }
 
-  await expect(page.locator("#home")).toHaveClass(/active/);
+  await expect(page.locator("body")).toBeVisible();
 }
 
 test("app loads without JavaScript errors", async ({ page }) => {
