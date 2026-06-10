@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Disbursing Readiness Simulator</title>
+  <rect width="512" height="512" fill="#123c33"/>
+  <rect x="72" y="72" width="368" height="368" fill="#b4d33d"/>
+  <path d="M142 150h118c75 0 120 39 120 106s-45 106-120 106H142V150zm72 58v96h42c32 0 50-16 50-48s-18-48-50-48h-42z" fill="#123c33"/>
+  <rect x="142" y="382" width="238" height="20" fill="#123c33"/>
+</svg>

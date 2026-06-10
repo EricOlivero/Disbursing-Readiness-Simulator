@@ -1,0 +1,389 @@
+/* Final presentation layer for the separate unit-pilot build. */
+
+:root {
+  --pilot-ink: #142824;
+  --pilot-muted: #5c6f69;
+  --pilot-line: #c9d4d1;
+  --pilot-paper: #ffffff;
+  --pilot-field: #f7faf9;
+  --pilot-green: #146a59;
+  --pilot-green-dark: #0d493e;
+  --pilot-focus: #f2b84b;
+  --pilot-danger: #9a2e27;
+  --pilot-nav-height: 66px;
+}
+
+html {
+  scroll-padding-top: 84px;
+  text-size-adjust: 100%;
+}
+
+body {
+  color: var(--pilot-ink);
+  overflow-wrap: anywhere;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+  font: inherit;
+}
+
+button,
+select,
+input[type="checkbox"],
+input[type="radio"] {
+  touch-action: manipulation;
+}
+
+button,
+.button,
+input,
+select {
+  min-height: 44px;
+}
+
+textarea {
+  min-height: 92px;
+  line-height: 1.45;
+}
+
+input,
+select,
+textarea {
+  border: 1px solid #aebdb8;
+  border-radius: 5px;
+  background: var(--pilot-paper);
+  color: var(--pilot-ink);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--pilot-green);
+  outline: 3px solid rgba(20, 106, 89, 0.18);
+  outline-offset: 1px;
+}
+
+button:focus-visible,
+.button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--pilot-focus);
+  outline-offset: 3px;
+}
+
+button:disabled,
+.button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.screen {
+  min-width: 0;
+  padding-bottom: calc(var(--pilot-nav-height) + 28px);
+}
+
+.screen > * {
+  min-width: 0;
+}
+
+.screen h1,
+.screen h2,
+.screen h3,
+.screen h4 {
+  max-width: 100%;
+  line-height: 1.15;
+}
+
+.screen p,
+.screen li,
+.screen label,
+.screen summary,
+.screen td,
+.screen th {
+  line-height: 1.45;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: 5px;
+  white-space: normal;
+  text-align: center;
+}
+
+.button-primary {
+  border-color: var(--pilot-green-dark);
+  background: var(--pilot-green);
+  color: #ffffff;
+}
+
+.button-primary:hover {
+  background: var(--pilot-green-dark);
+}
+
+.button-secondary {
+  border-color: #aebdb8;
+  background: #ffffff;
+  color: var(--pilot-ink);
+}
+
+.form-practical,
+.mission-card,
+.lesson-card,
+.qualification-card,
+.aar-card {
+  max-width: 100%;
+  border-radius: 7px;
+}
+
+.form-practical {
+  overflow: hidden;
+  border: 1px solid var(--pilot-line);
+  background: var(--pilot-paper);
+}
+
+.form-practical input,
+.form-practical select,
+.form-practical textarea {
+  background: var(--pilot-field);
+}
+
+.form-practical label,
+.qualification-card label {
+  min-width: 0;
+}
+
+.form-practical table,
+.denomination-table,
+.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.form-practical th,
+.form-practical td,
+.denomination-table th,
+.denomination-table td,
+.ledger-table th,
+.ledger-table td {
+  padding: 9px;
+  border: 1px solid var(--pilot-line);
+  vertical-align: middle;
+}
+
+.form-practical th,
+.denomination-table th,
+.ledger-table th {
+  background: #edf3f1;
+  text-align: left;
+}
+
+.form-practical input[type="number"],
+.denomination-table input,
+.ledger-table input {
+  min-width: 92px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lesson-progress,
+.training-progress,
+.mission-progress {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.lesson-progress button,
+.training-progress button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.bottom-nav {
+  min-height: var(--pilot-nav-height);
+  padding-bottom: max(4px, env(safe-area-inset-bottom));
+}
+
+.bottom-nav button {
+  min-width: 0;
+  min-height: 54px;
+  padding: 6px 4px;
+}
+
+.bottom-nav button span,
+.bottom-nav button strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: clamp(0.65rem, 2.5vw, 0.8rem);
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+[aria-live] {
+  min-height: 1.25em;
+}
+
+details > summary {
+  min-height: 44px;
+  padding: 10px 0;
+}
+
+pre,
+code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.status,
+.badge,
+.pill,
+.tag {
+  max-width: 100%;
+  white-space: normal;
+}
+
+@media (max-width: 820px) {
+  .screen {
+    padding-inline: 14px;
+  }
+
+  .screen h1 {
+    font-size: clamp(1.7rem, 8vw, 2.4rem);
+  }
+
+  .screen h2 {
+    font-size: clamp(1.2rem, 5.5vw, 1.6rem);
+  }
+
+  .form-practical,
+  .mission-card,
+  .lesson-card,
+  .qualification-card,
+  .aar-card {
+    margin-inline: 0;
+  }
+
+  .form-practical table,
+  .denomination-table,
+  .ledger-table {
+    min-width: 560px;
+  }
+
+  .form-practical:has(table),
+  .denomination-workbench,
+  .ledger-workbench {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .button-row,
+  .form-actions,
+  .mission-actions,
+  .qualification-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .button-row .button,
+  .form-actions .button,
+  .mission-actions .button,
+  .qualification-actions .button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .screen {
+    padding-inline: 10px;
+  }
+
+  .screen h1,
+  .screen h2,
+  .screen h3 {
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .bottom-nav {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  .bottom-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bottom-nav button {
+    flex: 0 0 76px;
+  }
+
+  .form-practical th,
+  .form-practical td,
+  .denomination-table th,
+  .denomination-table td,
+  .ledger-table th,
+  .ledger-table td {
+    padding: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .topbar,
+  .bottom-nav,
+  .rail,
+  .button,
+  button,
+  .runbook-actions,
+  .assignment-actions,
+  .rubric-actions,
+  .audit-actions {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .screen {
+    display: block !important;
+    padding: 0 !important;
+  }
+
+  .screen:not(.active) {
+    display: none !important;
+  }
+
+  article,
+  section,
+  .form-practical,
+  .mission-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+}

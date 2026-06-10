@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123c33">
+  <title>Disbursing Readiness Simulator - Unit Pilot</title>
+  <link rel="manifest" href="manifest-v2.json">
+  <link rel="stylesheet" href="unit-pilot-v2.css">
+  <link rel="stylesheet" href="facilitator-runbook.css">
+  <link rel="stylesheet" href="facilitator-assignment-board.css">
+  <link rel="stylesheet" href="facilitator-observation-rubric.css">
+  <link rel="stylesheet" href="pilot-readiness-audit.css">
+  <link rel="stylesheet" href="unit-pilot-polish.css">
+  <link rel="stylesheet" href="pilot-feedback.css">
+</head>
+<body>
+  <a class="skip-link" href="#app">Skip to training content</a>
+  <header class="topbar">
+    <button class="icon-button mobile-only" id="menuButton" type="button" aria-label="Open navigation">Menu</button>
+    <a class="brand" href="#dashboard" data-route="dashboard">
+      <span class="brand-mark">DRS</span>
+      <span>
+        <strong>Disbursing Readiness</strong>
+        <small>Unit Pilot</small>
+      </span>
+    </a>
+    <div class="topbar-status">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span>Offline ready - Pilot 2.1</span>
+    </div>
+    <button class="profile-button" id="profileButton" type="button">
+      <span id="profileInitials">AM</span>
+      <span class="desktop-only" id="profileName">Airman</span>
+    </button>
+  </header>
+
+  <aside class="rail" id="rail">
+    <nav aria-label="Primary navigation">
+      <button type="button" data-route="dashboard" class="active"><span>01</span>Readiness</button>
+      <button type="button" data-route="academy"><span>02</span>Academy</button>
+      <button type="button" data-route="qualification"><span>03</span>Qualification</button>
+      <button type="button" data-route="team"><span>04</span>Team Ops</button>
+      <button type="button" data-route="aar"><span>05</span>AAR</button>
+      <button type="button" data-route="facilitator"><span>06</span>Facilitator</button>
+    </nav>
+    <div class="rail-note">
+      <strong>Training use only</strong>
+      <p>Fictional values and sanitized examples. Verify current policy before operational use.</p>
+    </div>
+  </aside>
+
+  <main id="app" tabindex="-1">
+    <section class="view active" id="dashboardView" data-view="dashboard">
+      <div class="command-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Three-hour readiness event</p>
+          <h1>Learn the system. Prove the balance. Execute the mission.</h1>
+          <p>Every learner qualifies individually before joining a role-based team mission.</p>
+          <button class="primary-button" type="button" data-action="continue-training">Continue training</button>
+        </div>
+        <div class="hero-visual" role="img" aria-label="Fictional deployed finance workbench">
+          <div class="cash-stack cash-stack-one"><span>20</span><span>20</span><span>20</span></div>
+          <div class="cash-stack cash-stack-two"><span>10</span><span>10</span></div>
+          <div class="ledger-sheet">
+            <strong>ACCOUNTABILITY</strong>
+            <div></div><div></div><div></div><div></div>
+          </div>
+          <div class="calculator-grid" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <section class="readiness-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Your readiness board</p>
+              <h2 id="readinessHeadline">Start with the Academy</h2>
+            </div>
+            <span class="score-ring" id="readinessScore">0%</span>
+          </div>
+          <div class="phase-track" id="phaseTrack"></div>
+          <div class="next-action" id="nextAction"></div>
+        </section>
+
+        <section class="schedule-panel">
+          <p class="eyebrow">Training-day battle rhythm</p>
+          <ol class="schedule-list">
+            <li><time>0:00</time><div><strong>Academy sprint</strong><span>Concepts, forms, and coached practice</span></div><b>60 min</b></li>
+            <li><time>1:00</time><div><strong>Individual qualification</strong><span>DD 1081, transactions, count, explain</span></div><b>35 min</b></li>
+            <li><time>1:35</time><div><strong>Team operations</strong><span>Seven distinct missions with role handoffs</span></div><b>70 min</b></li>
+            <li><time>2:45</time><div><strong>After-action review</strong><span>Defend decisions and assign remediation</span></div><b>15 min</b></li>
+          </ol>
+        </section>
+      </div>
+    </section>
+
+    <section class="view" id="academyView" data-view="academy">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Individual path - phase 1</p>
+          <h1>Disbursing Academy</h1>
+          <p>One module at a time. Learn, inspect, practice, then prove mastery.</p>
+        </div>
+        <div class="header-metric"><strong id="academyProgressText">0 of 8</strong><span>modules mastered</span></div>
+      </header>
+      <div class="academy-layout">
+        <aside class="module-rail" id="moduleRail" aria-label="Academy modules"></aside>
+        <article class="lesson-stage" id="lessonStage"></article>
+      </div>
+    </section>
+
+    <section class="view" id="qualificationView" data-view="qualification">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Individual path - phase 2</p>
+          <h1>Cashier Qualification</h1>
+          <p>Perform the complete accountability cycle without answer prompts.</p>
+        </div>
+        <div class="header-metric"><strong id="qualificationStatus">Locked</strong><span>mission access standard</span></div>
+      </header>
+      <div id="qualificationWorkspace"></div>
+    </section>
+
+    <section class="view" id="teamView" data-view="team">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Team path - phase 3</p>
+          <h1>Team Operations Center</h1>
+          <p>Assign one mission per team. Every role produces evidence and completes a handoff.</p>
+        </div>
+        <div class="header-metric"><strong>7</strong><span>distinct mission journeys</span></div>
+      </header>
+      <div id="missionLibrary"></div>
+      <div id="missionWorkspace"></div>
+    </section>
+
+    <section class="view" id="aarView" data-view="aar">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Phase 4</p>
+          <h1>After-Action Review</h1>
+          <p>Review the decisions, math, controls, and handoffs that shaped the outcome.</p>
+        </div>
+      </header>
+      <div id="aarWorkspace"></div>
+    </section>
+
+    <section class="view" id="facilitatorView" data-view="facilitator">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Instructor control</p>
+          <h1>Facilitator Console</h1>
+          <p>Run the event, assign missions, observe without rescuing, and lead the AAR.</p>
+        </div>
+      </header>
+      <div id="facilitatorWorkspace"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav mobile-only" aria-label="Mobile navigation">
+    <button type="button" data-route="dashboard" class="active"><span>01</span>Home</button>
+    <button type="button" data-route="academy"><span>02</span>Learn</button>
+    <button type="button" data-route="qualification"><span>03</span>Qual</button>
+    <button type="button" data-route="team"><span>04</span>Team</button>
+    <button type="button" data-route="aar"><span>05</span>AAR</button>
+  </nav>
+
+  <dialog id="profileDialog">
+    <form method="dialog" id="profileForm">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Local learner profile</p>
+          <h2>Set your training identity</h2>
+        </div>
+        <button class="icon-button" value="cancel" type="submit" aria-label="Close">Close</button>
+      </div>
+      <label>Callsign or name<input id="profileNameInput" maxlength="30" autocomplete="name"></label>
+      <label>Experience level
+        <select id="profileLevelInput">
+          <option value="new">New to disbursing</option>
+          <option value="developing">Developing</option>
+          <option value="experienced">Experienced refresher</option>
+        </select>
+      </label>
+      <button class="primary-button" value="default" type="submit">Save locally</button>
+      <p class="fine-print">Progress stays on this device. No account or network is required.</p>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="unit-pilot-v2.js"></script>
+  <script src="facilitator-runbook.js" defer></script>
+  <script src="facilitator-assignment-board.js" defer></script>
+  <script src="facilitator-observation-rubric.js" defer></script>
+  <script src="pilot-readiness-audit.js" defer></script>
+  <script src="pilot-feedback.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+.pilot-audit {
+  margin: 0 0 24px;
+  padding: 20px;
+  border: 1px solid #b8c6b1;
+  border-left: 5px solid #4f6f43;
+  border-radius: 8px;
+  background: #f8fbf6;
+  color: #21301d;
+}
+
+.audit-heading,
+.audit-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.audit-heading h2 {
+  margin: 2px 0 6px;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.audit-heading p {
+  margin: 0;
+}
+
+.audit-eyebrow {
+  color: #4f6f43;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.audit-summary {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: 230px;
+  justify-content: flex-end;
+}
+
+.audit-summary span {
+  padding: 6px 8px;
+  border: 1px solid #c6d2c1;
+  border-radius: 5px;
+  background: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.audit-summary span[data-status="pass"] {
+  background: #dff0e5;
+  color: #195d36;
+}
+
+.audit-summary span[data-status="warning"] {
+  background: #fff0d6;
+  color: #784b00;
+}
+
+.audit-summary span[data-status="fail"] {
+  background: #f7dfdc;
+  color: #8a2c24;
+}
+
+.audit-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin: 16px 0 12px;
+}
+
+.audit-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.audit-result {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid #d1dacd;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.audit-result[data-status="fail"] {
+  border-color: #d8aaa5;
+}
+
+.audit-result[data-status="warning"] {
+  border-color: #dfc28c;
+}
+
+.audit-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: #dff0e5;
+  color: #195d36;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.audit-result[data-status="fail"] .audit-icon {
+  background: #f7dfdc;
+  color: #8a2c24;
+}
+
+.audit-result[data-status="warning"] .audit-icon {
+  background: #fff0d6;
+  color: #784b00;
+}
+
+.audit-result strong {
+  display: block;
+}
+
+.audit-result p {
+  margin: 3px 0 0;
+  color: #5c6d56;
+  font-size: 0.82rem;
+}
+
+.audit-note {
+  margin: 10px 0 0;
+  color: #5c6d56;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 700px) {
+  .pilot-audit {
+    padding: 14px;
+  }
+
+  .audit-heading {
+    display: block;
+  }
+
+  .audit-summary {
+    justify-content: flex-start;
+    margin-top: 10px;
+    max-width: none;
+  }
+
+  .audit-results {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-actions .button {
+    flex: 1 1 150px;
+  }
+}
